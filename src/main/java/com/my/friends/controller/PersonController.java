@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/home")
@@ -43,7 +44,8 @@ public class PersonController {
      * */
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLbXms")
-    public ArrayList<LbXm> getLbXms(@RequestParam String parent){
+    public List<LbXm> getLbXms(@ApiParam(value = "类别号",required = false,defaultValue = "LB1")
+                             @RequestParam(required = false) String parent){
         return personService.selectLbXm(parent);
     }
 

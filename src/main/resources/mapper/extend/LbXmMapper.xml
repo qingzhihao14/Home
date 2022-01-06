@@ -19,16 +19,18 @@
             ca.fwxj ca_fwxj,
             ca.fwbz ca_fwbz
         FROM
-            t_lb_item ca
-        LEFT JOIN t_lb cu ON cu. CODE = ca. parent
-        where cu.code = #{code}
+          t_lb cu
+        LEFT JOIN t_lb_item ca ON cu. CODE = ca. parent
+        <if test="code != null">
+            where cu.code = #{code}
+        </if>
 
     </select>
     <resultMap id="LbXmResultMap"
                extends="com.my.friends.mapper.LbMapper.BaseResultMap"
                type="com.my.friends.dao.extend.LbXm">
         <!--<association property="lbItem" ofType="com.my.friends.dao.LbItem" javaType="ArrayList">-->
-        <association property="lbItem" javaType="com.my.friends.dao.LbItem">
+        <collection property="lbItem" javaType="List" ofType="com.my.friends.dao.LbItem">
             <result column="ca_id" property="id"/>
             <result column="ca_parent" property="parent"/>
             <result column="ca_code" property="code"/>
@@ -40,6 +42,6 @@
             <result column="ca_fwxz" property="fwxz"/>
             <result column="ca_fwxj" property="fwxj"/>
             <result column="ca_fwbz" property="fwbz"/>
-        </association>
+        </collection >
     </resultMap>
 </mapper>

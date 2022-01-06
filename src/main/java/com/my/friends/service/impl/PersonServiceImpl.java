@@ -71,7 +71,7 @@ public class PersonServiceImpl implements PersonService {
     * 0.查询类别、项目
     * */
     @Override
-    public ArrayList<LbXm> selectLbXm(String parent) {
+    public ArrayList selectLbXm(String parent) {
         return lbXmMapper.selectLbXm(parent);
     }
     /*
