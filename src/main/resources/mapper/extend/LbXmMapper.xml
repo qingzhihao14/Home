@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.friends.mapper.extend.LbXmMapper">
+
+    <select id="selectLbXm" resultMap="LbXmResultMap">
+        SELECT
+            cu.id  id,
+            cu.`code`  code,
+            cu.`name`  name,
+            ca.id ca_id,
+            ca.parent ca_parent,
+            ca.code ca_code,
+            ca.name ca_name,
+            ca.price ca_price,
+            ca.unit ca_unit,
+            ca.sold ca_sold,
+            ca.fwqx ca_fwqx,
+            ca.fwxz ca_fwxz,
+            ca.fwxj ca_fwxj,
+            ca.fwbz ca_fwbz
+        FROM
+            t_lb_item ca
+        LEFT JOIN t_lb cu ON cu. CODE = ca. parent
+        where cu.code = #{code}
+
+    </select>
+    <resultMap id="LbXmResultMap"
+               extends="com.my.friends.mapper.LbMapper.BaseResultMap"
+               type="com.my.friends.dao.extend.LbXm">
+        <!--<association property="lbItem" ofType="com.my.friends.dao.LbItem" javaType="ArrayList">-->
+        <association property="lbItem" javaType="com.my.friends.dao.LbItem">
+            <result column="ca_id" property="id"/>
+            <result column="ca_parent" property="parent"/>
+            <result column="ca_code" property="code"/>
+            <result column="ca_name" property="name"/>
+            <result column="ca_price" property="price"/>
+            <result column="ca_unit" property="unit"/>
+            <result column="ca_sold" property="sold"/>
+            <result column="ca_fwqx" property="fwqx"/>
+            <result column="ca_fwxz" property="fwxz"/>
+            <result column="ca_fwxj" property="fwxj"/>
+            <result column="ca_fwbz" property="fwbz"/>
+        </association>
+    </resultMap>
+</mapper>

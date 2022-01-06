@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.friends.mapper.OrderMapper">
+  <resultMap id="BaseResultMap" type="com.my.friends.dao.Order">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="usercode" jdbcType="VARCHAR" property="usercode" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="orderno" jdbcType="VARCHAR" property="orderno" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="pay" jdbcType="INTEGER" property="pay" />
+    <result column="sold" jdbcType="INTEGER" property="sold" />
+    <result column="addressno" jdbcType="VARCHAR" property="addressno" />
+    <result column="servicetime" jdbcType="VARCHAR" property="servicetime" />
+    <result column="coupon" jdbcType="VARCHAR" property="coupon" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, usercode, code, orderno, `state`, pay, sold, addressno, servicetime, coupon, 
+    note
+  </sql>
+  <select id="selectByExample" parameterType="com.my.friends.dao.OrderExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from t_order
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_order
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_order
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.my.friends.dao.OrderExample">
+    delete from t_order
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Order" useGeneratedKeys="true">
+    insert into t_order (usercode, code, orderno, 
+      `state`, pay, sold, addressno, 
+      servicetime, coupon, note
+      )
+    values (#{usercode,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{orderno,jdbcType=VARCHAR}, 
+      #{state,jdbcType=INTEGER}, #{pay,jdbcType=INTEGER}, #{sold,jdbcType=INTEGER}, #{addressno,jdbcType=VARCHAR}, 
+      #{servicetime,jdbcType=VARCHAR}, #{coupon,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Order" useGeneratedKeys="true">
+    insert into t_order
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="usercode != null">
+        usercode,
+      </if>
+      <if test="code != null">
+        code,
+      </if>
+      <if test="orderno != null">
+        orderno,
+      </if>
+      <if test="state != null">
+        `state`,
+      </if>
+      <if test="pay != null">
+        pay,
+      </if>
+      <if test="sold != null">
+        sold,
+      </if>
+      <if test="addressno != null">
+        addressno,
+      </if>
+      <if test="servicetime != null">
+        servicetime,
+      </if>
+      <if test="coupon != null">
+        coupon,
+      </if>
+      <if test="note != null">
+        note,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="usercode != null">
+        #{usercode,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="orderno != null">
+        #{orderno,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="pay != null">
+        #{pay,jdbcType=INTEGER},
+      </if>
+      <if test="sold != null">
+        #{sold,jdbcType=INTEGER},
+      </if>
+      <if test="addressno != null">
+        #{addressno,jdbcType=VARCHAR},
+      </if>
+      <if test="servicetime != null">
+        #{servicetime,jdbcType=VARCHAR},
+      </if>
+      <if test="coupon != null">
+        #{coupon,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null">
+        #{note,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.my.friends.dao.OrderExample" resultType="java.lang.Long">
+    select count(*) from t_order
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update t_order
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.usercode != null">
+        usercode = #{record.usercode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.code != null">
+        code = #{record.code,jdbcType=VARCHAR},
+      </if>
+      <if test="record.orderno != null">
+        orderno = #{record.orderno,jdbcType=VARCHAR},
+      </if>
+      <if test="record.state != null">
+        `state` = #{record.state,jdbcType=INTEGER},
+      </if>
+      <if test="record.pay != null">
+        pay = #{record.pay,jdbcType=INTEGER},
+      </if>
+      <if test="record.sold != null">
+        sold = #{record.sold,jdbcType=INTEGER},
+      </if>
+      <if test="record.addressno != null">
+        addressno = #{record.addressno,jdbcType=VARCHAR},
+      </if>
+      <if test="record.servicetime != null">
+        servicetime = #{record.servicetime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.coupon != null">
+        coupon = #{record.coupon,jdbcType=VARCHAR},
+      </if>
+      <if test="record.note != null">
+        note = #{record.note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update t_order
+    set id = #{record.id,jdbcType=VARCHAR},
+      usercode = #{record.usercode,jdbcType=VARCHAR},
+      code = #{record.code,jdbcType=VARCHAR},
+      orderno = #{record.orderno,jdbcType=VARCHAR},
+      `state` = #{record.state,jdbcType=INTEGER},
+      pay = #{record.pay,jdbcType=INTEGER},
+      sold = #{record.sold,jdbcType=INTEGER},
+      addressno = #{record.addressno,jdbcType=VARCHAR},
+      servicetime = #{record.servicetime,jdbcType=VARCHAR},
+      coupon = #{record.coupon,jdbcType=VARCHAR},
+      note = #{record.note,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.my.friends.dao.Order">
+    update t_order
+    <set>
+      <if test="usercode != null">
+        usercode = #{usercode,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="orderno != null">
+        orderno = #{orderno,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        `state` = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="pay != null">
+        pay = #{pay,jdbcType=INTEGER},
+      </if>
+      <if test="sold != null">
+        sold = #{sold,jdbcType=INTEGER},
+      </if>
+      <if test="addressno != null">
+        addressno = #{addressno,jdbcType=VARCHAR},
+      </if>
+      <if test="servicetime != null">
+        servicetime = #{servicetime,jdbcType=VARCHAR},
+      </if>
+      <if test="coupon != null">
+        coupon = #{coupon,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null">
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.my.friends.dao.Order">
+    update t_order
+    set usercode = #{usercode,jdbcType=VARCHAR},
+      code = #{code,jdbcType=VARCHAR},
+      orderno = #{orderno,jdbcType=VARCHAR},
+      `state` = #{state,jdbcType=INTEGER},
+      pay = #{pay,jdbcType=INTEGER},
+      sold = #{sold,jdbcType=INTEGER},
+      addressno = #{addressno,jdbcType=VARCHAR},
+      servicetime = #{servicetime,jdbcType=VARCHAR},
+      coupon = #{coupon,jdbcType=VARCHAR},
+      note = #{note,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

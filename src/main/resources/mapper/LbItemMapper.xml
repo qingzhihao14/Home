@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.friends.mapper.LbItemMapper">
+  <resultMap id="BaseResultMap" type="com.my.friends.dao.LbItem">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="parent" jdbcType="VARCHAR" property="parent" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="price" jdbcType="INTEGER" property="price" />
+    <result column="unit" jdbcType="VARCHAR" property="unit" />
+    <result column="sold" jdbcType="INTEGER" property="sold" />
+    <result column="fwqx" jdbcType="VARCHAR" property="fwqx" />
+    <result column="fwxz" jdbcType="VARCHAR" property="fwxz" />
+    <result column="fwxj" jdbcType="VARCHAR" property="fwxj" />
+    <result column="fwbz" jdbcType="VARCHAR" property="fwbz" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, parent, code, `name`, price, unit, sold, fwqx, fwxz, fwxj, fwbz
+  </sql>
+  <select id="selectByExample" parameterType="com.my.friends.dao.LbItemExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from t_lb_item
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_lb_item
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_lb_item
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.my.friends.dao.LbItemExample">
+    delete from t_lb_item
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.LbItem" useGeneratedKeys="true">
+    insert into t_lb_item (id,parent, code, `name`,
+      price, unit, sold, 
+      fwqx, fwxz, fwxj, fwbz
+      )
+    values (#{id,jdbcType=VARCHAR}, #{parent,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
+      #{price,jdbcType=INTEGER}, #{unit,jdbcType=VARCHAR}, #{sold,jdbcType=INTEGER}, 
+      #{fwqx,jdbcType=VARCHAR}, #{fwxz,jdbcType=VARCHAR}, #{fwxj,jdbcType=VARCHAR}, #{fwbz,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.LbItem" useGeneratedKeys="true">
+    insert into t_lb_item
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="parent != null">
+        parent,
+      </if>
+      <if test="code != null">
+        code,
+      </if>
+      <if test="name != null">
+        `name`,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+      <if test="unit != null">
+        unit,
+      </if>
+      <if test="sold != null">
+        sold,
+      </if>
+      <if test="fwqx != null">
+        fwqx,
+      </if>
+      <if test="fwxz != null">
+        fwxz,
+      </if>
+      <if test="fwxj != null">
+        fwxj,
+      </if>
+      <if test="fwbz != null">
+        fwbz,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="parent != null">
+        #{parent,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=INTEGER},
+      </if>
+      <if test="unit != null">
+        #{unit,jdbcType=VARCHAR},
+      </if>
+      <if test="sold != null">
+        #{sold,jdbcType=INTEGER},
+      </if>
+      <if test="fwqx != null">
+        #{fwqx,jdbcType=VARCHAR},
+      </if>
+      <if test="fwxz != null">
+        #{fwxz,jdbcType=VARCHAR},
+      </if>
+      <if test="fwxj != null">
+        #{fwxj,jdbcType=VARCHAR},
+      </if>
+      <if test="fwbz != null">
+        #{fwbz,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.my.friends.dao.LbItemExample" resultType="java.lang.Long">
+    select count(*) from t_lb_item
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update t_lb_item
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.parent != null">
+        parent = #{record.parent,jdbcType=VARCHAR},
+      </if>
+      <if test="record.code != null">
+        code = #{record.code,jdbcType=VARCHAR},
+      </if>
+      <if test="record.name != null">
+        `name` = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.price != null">
+        price = #{record.price,jdbcType=INTEGER},
+      </if>
+      <if test="record.unit != null">
+        unit = #{record.unit,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sold != null">
+        sold = #{record.sold,jdbcType=INTEGER},
+      </if>
+      <if test="record.fwqx != null">
+        fwqx = #{record.fwqx,jdbcType=VARCHAR},
+      </if>
+      <if test="record.fwxz != null">
+        fwxz = #{record.fwxz,jdbcType=VARCHAR},
+      </if>
+      <if test="record.fwxj != null">
+        fwxj = #{record.fwxj,jdbcType=VARCHAR},
+      </if>
+      <if test="record.fwbz != null">
+        fwbz = #{record.fwbz,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update t_lb_item
+    set id = #{record.id,jdbcType=VARCHAR},
+      parent = #{record.parent,jdbcType=VARCHAR},
+      code = #{record.code,jdbcType=VARCHAR},
+      `name` = #{record.name,jdbcType=VARCHAR},
+      price = #{record.price,jdbcType=INTEGER},
+      unit = #{record.unit,jdbcType=VARCHAR},
+      sold = #{record.sold,jdbcType=INTEGER},
+      fwqx = #{record.fwqx,jdbcType=VARCHAR},
+      fwxz = #{record.fwxz,jdbcType=VARCHAR},
+      fwxj = #{record.fwxj,jdbcType=VARCHAR},
+      fwbz = #{record.fwbz,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.my.friends.dao.LbItem">
+    update t_lb_item
+    <set>
+      <if test="parent != null">
+        parent = #{parent,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        `name` = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=INTEGER},
+      </if>
+      <if test="unit != null">
+        unit = #{unit,jdbcType=VARCHAR},
+      </if>
+      <if test="sold != null">
+        sold = #{sold,jdbcType=INTEGER},
+      </if>
+      <if test="fwqx != null">
+        fwqx = #{fwqx,jdbcType=VARCHAR},
+      </if>
+      <if test="fwxz != null">
+        fwxz = #{fwxz,jdbcType=VARCHAR},
+      </if>
+      <if test="fwxj != null">
+        fwxj = #{fwxj,jdbcType=VARCHAR},
+      </if>
+      <if test="fwbz != null">
+        fwbz = #{fwbz,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.my.friends.dao.LbItem">
+    update t_lb_item
+    set parent = #{parent,jdbcType=VARCHAR},
+      code = #{code,jdbcType=VARCHAR},
+      `name` = #{name,jdbcType=VARCHAR},
+      price = #{price,jdbcType=INTEGER},
+      unit = #{unit,jdbcType=VARCHAR},
+      sold = #{sold,jdbcType=INTEGER},
+      fwqx = #{fwqx,jdbcType=VARCHAR},
+      fwxz = #{fwxz,jdbcType=VARCHAR},
+      fwxj = #{fwxj,jdbcType=VARCHAR},
+      fwbz = #{fwbz,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>
