@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.my.friends.mapper.PersonMapper">
+  <resultMap id="BaseResultMap" type="com.my.friends.dao.Person">
+    <id column="uuid" jdbcType="VARCHAR" property="uuid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="wechat" jdbcType="VARCHAR" property="wechat" />
+    <result column="sex" jdbcType="INTEGER" property="sex" />
+    <result column="age" jdbcType="VARCHAR" property="age" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="pictures_id" jdbcType="VARCHAR" property="picturesId" />
+    <result column="declaration" jdbcType="VARCHAR" property="declaration" />
+    <result column="secret_key" jdbcType="VARCHAR" property="secretKey" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    uuid, `name`, wechat, sex, age, `type`, province, pictures_id, declaration, secret_key
+  </sql>
+  <select id="selectByExample" parameterType="com.my.friends.dao.PersonExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from t_person
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_person
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_person
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.my.friends.dao.PersonExample">
+    delete from t_person
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" keyColumn="uuid" keyProperty="uuid" parameterType="com.my.friends.dao.Person" useGeneratedKeys="true">
+    insert into t_person (`name`, wechat, sex, 
+      age, `type`, province, 
+      pictures_id, declaration, secret_key
+      )
+    values (#{name,jdbcType=VARCHAR}, #{wechat,jdbcType=VARCHAR}, #{sex,jdbcType=INTEGER}, 
+      #{age,jdbcType=VARCHAR}, #{type,jdbcType=INTEGER}, #{province,jdbcType=VARCHAR}, 
+      #{picturesId,jdbcType=VARCHAR}, #{declaration,jdbcType=VARCHAR}, #{secretKey,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="uuid" keyProperty="uuid" parameterType="com.my.friends.dao.Person" useGeneratedKeys="true">
+    insert into t_person
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="name != null">
+        `name`,
+      </if>
+      <if test="wechat != null">
+        wechat,
+      </if>
+      <if test="sex != null">
+        sex,
+      </if>
+      <if test="age != null">
+        age,
+      </if>
+      <if test="type != null">
+        `type`,
+      </if>
+      <if test="province != null">
+        province,
+      </if>
+      <if test="picturesId != null">
+        pictures_id,
+      </if>
+      <if test="declaration != null">
+        declaration,
+      </if>
+      <if test="secretKey != null">
+        secret_key,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="wechat != null">
+        #{wechat,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null">
+        #{sex,jdbcType=INTEGER},
+      </if>
+      <if test="age != null">
+        #{age,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="province != null">
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="picturesId != null">
+        #{picturesId,jdbcType=VARCHAR},
+      </if>
+      <if test="declaration != null">
+        #{declaration,jdbcType=VARCHAR},
+      </if>
+      <if test="secretKey != null">
+        #{secretKey,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.my.friends.dao.PersonExample" resultType="java.lang.Long">
+    select count(*) from t_person
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update t_person
+    <set>
+      <if test="record.uuid != null">
+        uuid = #{record.uuid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.name != null">
+        `name` = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wechat != null">
+        wechat = #{record.wechat,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sex != null">
+        sex = #{record.sex,jdbcType=INTEGER},
+      </if>
+      <if test="record.age != null">
+        age = #{record.age,jdbcType=VARCHAR},
+      </if>
+      <if test="record.type != null">
+        `type` = #{record.type,jdbcType=INTEGER},
+      </if>
+      <if test="record.province != null">
+        province = #{record.province,jdbcType=VARCHAR},
+      </if>
+      <if test="record.picturesId != null">
+        pictures_id = #{record.picturesId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.declaration != null">
+        declaration = #{record.declaration,jdbcType=VARCHAR},
+      </if>
+      <if test="record.secretKey != null">
+        secret_key = #{record.secretKey,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update t_person
+    set uuid = #{record.uuid,jdbcType=VARCHAR},
+      `name` = #{record.name,jdbcType=VARCHAR},
+      wechat = #{record.wechat,jdbcType=VARCHAR},
+      sex = #{record.sex,jdbcType=INTEGER},
+      age = #{record.age,jdbcType=VARCHAR},
+      `type` = #{record.type,jdbcType=INTEGER},
+      province = #{record.province,jdbcType=VARCHAR},
+      pictures_id = #{record.picturesId,jdbcType=VARCHAR},
+      declaration = #{record.declaration,jdbcType=VARCHAR},
+      secret_key = #{record.secretKey,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.my.friends.dao.Person">
+    update t_person
+    <set>
+      <if test="name != null">
+        `name` = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="wechat != null">
+        wechat = #{wechat,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null">
+        sex = #{sex,jdbcType=INTEGER},
+      </if>
+      <if test="age != null">
+        age = #{age,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        `type` = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="province != null">
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="picturesId != null">
+        pictures_id = #{picturesId,jdbcType=VARCHAR},
+      </if>
+      <if test="declaration != null">
+        declaration = #{declaration,jdbcType=VARCHAR},
+      </if>
+      <if test="secretKey != null">
+        secret_key = #{secretKey,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.my.friends.dao.Person">
+    update t_person
+    set `name` = #{name,jdbcType=VARCHAR},
+      wechat = #{wechat,jdbcType=VARCHAR},
+      sex = #{sex,jdbcType=INTEGER},
+      age = #{age,jdbcType=VARCHAR},
+      `type` = #{type,jdbcType=INTEGER},
+      province = #{province,jdbcType=VARCHAR},
+      pictures_id = #{picturesId,jdbcType=VARCHAR},
+      declaration = #{declaration,jdbcType=VARCHAR},
+      secret_key = #{secretKey,jdbcType=VARCHAR}
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </update>
+</mapper>
