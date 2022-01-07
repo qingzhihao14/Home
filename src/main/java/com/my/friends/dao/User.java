@@ -32,7 +32,7 @@ public class User implements Serializable {
     /**
      * 微信号
      */
-    private Integer wechat;
+    private String wechat;
 
     /**
      * 备注

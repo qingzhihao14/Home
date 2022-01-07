@@ -100,9 +100,9 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Picture" useGeneratedKeys="true">
-    insert into t_picture (orderno, `name`, `path`, 
+    insert into t_picture (id,orderno, `name`, `path`,
       `type`)
-    values (#{orderno,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR}, #{orderno,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR},
       #{type,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Picture" useGeneratedKeys="true">

@@ -107,11 +107,11 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Order" useGeneratedKeys="true">
-    insert into t_order (usercode, code, orderno, 
+    insert into t_order (id ,usercode, code, orderno,
       `state`, pay, sold, addressno, 
       servicetime, coupon, note
       )
-    values (#{usercode,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{orderno,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR},#{usercode,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{orderno,jdbcType=VARCHAR},
       #{state,jdbcType=INTEGER}, #{pay,jdbcType=INTEGER}, #{sold,jdbcType=INTEGER}, #{addressno,jdbcType=VARCHAR}, 
       #{servicetime,jdbcType=VARCHAR}, #{coupon,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}
       )

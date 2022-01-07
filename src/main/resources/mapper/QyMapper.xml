@@ -101,9 +101,9 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Qy" useGeneratedKeys="true">
-    insert into t_qy (code, `name`, contact, 
+    insert into t_qy (id,code, `name`, contact,
       phone, address)
-    values (#{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{contact,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR},#{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{contact,jdbcType=VARCHAR},
       #{phone,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Qy" useGeneratedKeys="true">

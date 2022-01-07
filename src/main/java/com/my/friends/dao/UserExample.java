@@ -384,52 +384,62 @@ public class UserExample {
             return (Criteria) this;
         }
 
-        public Criteria andWechatEqualTo(Integer value) {
+        public Criteria andWechatEqualTo(String value) {
             addCriterion("wechat =", value, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatNotEqualTo(Integer value) {
+        public Criteria andWechatNotEqualTo(String value) {
             addCriterion("wechat <>", value, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatGreaterThan(Integer value) {
+        public Criteria andWechatGreaterThan(String value) {
             addCriterion("wechat >", value, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatGreaterThanOrEqualTo(Integer value) {
+        public Criteria andWechatGreaterThanOrEqualTo(String value) {
             addCriterion("wechat >=", value, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatLessThan(Integer value) {
+        public Criteria andWechatLessThan(String value) {
             addCriterion("wechat <", value, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatLessThanOrEqualTo(Integer value) {
+        public Criteria andWechatLessThanOrEqualTo(String value) {
             addCriterion("wechat <=", value, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatIn(List<Integer> values) {
+        public Criteria andWechatLike(String value) {
+            addCriterion("wechat like", value, "wechat");
+            return (Criteria) this;
+        }
+
+        public Criteria andWechatNotLike(String value) {
+            addCriterion("wechat not like", value, "wechat");
+            return (Criteria) this;
+        }
+
+        public Criteria andWechatIn(List<String> values) {
             addCriterion("wechat in", values, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatNotIn(List<Integer> values) {
+        public Criteria andWechatNotIn(List<String> values) {
             addCriterion("wechat not in", values, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatBetween(Integer value1, Integer value2) {
+        public Criteria andWechatBetween(String value1, String value2) {
             addCriterion("wechat between", value1, value2, "wechat");
             return (Criteria) this;
         }
 
-        public Criteria andWechatNotBetween(Integer value1, Integer value2) {
+        public Criteria andWechatNotBetween(String value1, String value2) {
             addCriterion("wechat not between", value1, value2, "wechat");
             return (Criteria) this;
         }

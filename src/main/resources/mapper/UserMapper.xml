@@ -6,7 +6,7 @@
     <result column="code" jdbcType="VARCHAR" property="code" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="sex" jdbcType="INTEGER" property="sex" />
-    <result column="wechat" jdbcType="INTEGER" property="wechat" />
+    <result column="wechat" jdbcType="VARCHAR" property="wechat" />
     <result column="note" jdbcType="VARCHAR" property="note" />
   </resultMap>
   <sql id="Example_Where_Clause">
@@ -101,10 +101,10 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.User" useGeneratedKeys="true">
-    insert into t_user (code, `name`, sex, 
+    insert into t_user (id ,code, `name`, sex,
       wechat, note)
-    values (#{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{sex,jdbcType=INTEGER}, 
-      #{wechat,jdbcType=INTEGER}, #{note,jdbcType=VARCHAR})
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{sex,jdbcType=INTEGER},
+      #{wechat,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.User" useGeneratedKeys="true">
     insert into t_user
@@ -136,7 +136,7 @@
         #{sex,jdbcType=INTEGER},
       </if>
       <if test="wechat != null">
-        #{wechat,jdbcType=INTEGER},
+        #{wechat,jdbcType=VARCHAR},
       </if>
       <if test="note != null">
         #{note,jdbcType=VARCHAR},
@@ -165,7 +165,7 @@
         sex = #{record.sex,jdbcType=INTEGER},
       </if>
       <if test="record.wechat != null">
-        wechat = #{record.wechat,jdbcType=INTEGER},
+        wechat = #{record.wechat,jdbcType=VARCHAR},
       </if>
       <if test="record.note != null">
         note = #{record.note,jdbcType=VARCHAR},
@@ -181,7 +181,7 @@
       code = #{record.code,jdbcType=VARCHAR},
       `name` = #{record.name,jdbcType=VARCHAR},
       sex = #{record.sex,jdbcType=INTEGER},
-      wechat = #{record.wechat,jdbcType=INTEGER},
+      wechat = #{record.wechat,jdbcType=VARCHAR},
       note = #{record.note,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -200,7 +200,7 @@
         sex = #{sex,jdbcType=INTEGER},
       </if>
       <if test="wechat != null">
-        wechat = #{wechat,jdbcType=INTEGER},
+        wechat = #{wechat,jdbcType=VARCHAR},
       </if>
       <if test="note != null">
         note = #{note,jdbcType=VARCHAR},
@@ -213,7 +213,7 @@
     set code = #{code,jdbcType=VARCHAR},
       `name` = #{name,jdbcType=VARCHAR},
       sex = #{sex,jdbcType=INTEGER},
-      wechat = #{wechat,jdbcType=INTEGER},
+      wechat = #{wechat,jdbcType=VARCHAR},
       note = #{note,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>

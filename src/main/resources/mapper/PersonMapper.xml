@@ -105,11 +105,11 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="uuid" keyProperty="uuid" parameterType="com.my.friends.dao.Person" useGeneratedKeys="true">
-    insert into t_person (`name`, wechat, sex, 
+    insert into t_person (id,`name`, wechat, sex,
       age, `type`, province, 
       pictures_id, declaration, secret_key
       )
-    values (#{name,jdbcType=VARCHAR}, #{wechat,jdbcType=VARCHAR}, #{sex,jdbcType=INTEGER}, 
+    values (#{id,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{wechat,jdbcType=VARCHAR}, #{sex,jdbcType=INTEGER},
       #{age,jdbcType=VARCHAR}, #{type,jdbcType=INTEGER}, #{province,jdbcType=VARCHAR}, 
       #{picturesId,jdbcType=VARCHAR}, #{declaration,jdbcType=VARCHAR}, #{secretKey,jdbcType=VARCHAR}
       )

@@ -8,6 +8,7 @@ import com.my.friends.service.PersonService;
 import com.mysql.jdbc.StringUtils;
 import com.sun.org.apache.regexp.internal.RE;
 import org.apache.catalina.mbeans.UserMBean;
+import org.springframework.context.expression.CachedExpressionEvaluator;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -153,5 +154,100 @@ public class PersonServiceImpl implements PersonService {
             count = lbItemMapper.insert(lbItem);
         }
         return count>0?true:false;
+    }
+
+    /*
+     *
+     * 下单
+     *
+     * usercode 用户代码
+     * code 项目代码
+     * orderno 订单编码(支付返回)
+     * pay 支付金额(支付返回)
+     * addressno 服务地址编码()
+     * servicetime 服务时间
+     * coupon 优惠券
+     * note 备注
+     * */
+    // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
+    @Override
+    public Boolean order(String usercode, String code, String orderno, Integer pay, String address,String phone,String name, String servicetime, String coupon, String note) {
+        Order order = new Order();
+        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        order.setId(uuid);
+        order.setState(0);
+        order.setUsercode(usercode);
+        order.setCode(code);
+        order.setOrderno(orderno);
+        order.setPay(pay);
+        this.insertOrUpdateAddress(usercode,address,phone,name);
+//        order.setAddressno(addressno);
+        order.setServicetime(servicetime);
+        order.setCoupon(coupon);
+        order.setNote(note);
+        int insert = orderMapper.insert(order);
+        return insert>0 ? true:false;
+    }
+
+    /*
+     * 4.用户信息
+     * */
+    // 1.1 新增或更新项目
+    @Override
+    public String login(User user) {
+        String wechat = user.getWechat();
+        UserExample example = new UserExample();
+        example.createCriteria().andWechatEqualTo(wechat);
+        List<User> users = userMapper.selectByExample(example);
+        if(users.size()>0){
+            return users.get(0).getId();
+        }
+        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        user.setId(uuid);
+        user.setCode(user.getWechat());
+        int insert = userMapper.insert(user);
+        Boolean flag= insert>0 ? true : false;
+        return flag? user.getId():"";
+    }
+
+    @Override
+    public List<Order> getOrder(String usercode) {
+        OrderExample example = new OrderExample();
+        example.createCriteria().andUsercodeEqualTo(usercode);
+        List<Order> orders = orderMapper.selectByExample(example);
+        return orders;
+    }
+
+    //查询d订单地址
+    @Override
+    public Address getAddressById(String id) {
+        AddressExample example = new AddressExample();
+        example.createCriteria().andIdEqualTo(id);
+        List<Address> addresses = addressMapper.selectByExample(example);
+        if(addresses.size()>0){
+            return addresses.get(0);
+        }else{
+            return new Address();
+        }
+    }
+    @Override
+    public List<Address> getAddress(String usercode) {
+        AddressExample example = new AddressExample();
+        example.createCriteria().andCodeEqualTo(usercode);
+        List<Address> addresses = addressMapper.selectByExample(example);
+        return addresses;
+    }
+
+    @Override
+    public Boolean insertOrUpdateAddress(String usercode,String addressz,String phone,String name) {
+        Address address = new Address();
+        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        address.setId(uuid);
+        address.setCode(usercode);
+        address.setAddress(addressz);
+        address.setPhone(phone);
+        address.setName(name);
+        int insert = addressMapper.insert(address);
+        return insert>0 ? true : false;
     }
 }
