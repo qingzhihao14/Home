@@ -171,7 +171,7 @@ public class PersonServiceImpl implements PersonService {
      * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
     @Override
-    public Boolean order(String usercode, String code, String orderno, Integer pay, String address,String phone,String name, String servicetime, String coupon, String note) {
+    public Boolean order(String usercode, String code, String orderno, Integer pay, String addressid, String address,String phone,String name, String servicetime, String coupon, String note) {
         Order order = new Order();
         String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
         order.setId(uuid);
@@ -180,7 +180,7 @@ public class PersonServiceImpl implements PersonService {
         order.setCode(code);
         order.setOrderno(orderno);
         order.setPay(pay);
-        this.insertOrUpdateAddress(usercode,address,phone,name);
+        this.insertOrUpdateAddress(addressid,usercode,address,phone,name);
 //        order.setAddressno(addressno);
         order.setServicetime(servicetime);
         order.setCoupon(coupon);
@@ -239,15 +239,26 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Boolean insertOrUpdateAddress(String usercode,String addressz,String phone,String name) {
+    public Boolean insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name) {
         Address address = new Address();
-        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-        address.setId(uuid);
-        address.setCode(usercode);
-        address.setAddress(addressz);
-        address.setPhone(phone);
-        address.setName(name);
-        int insert = addressMapper.insert(address);
-        return insert>0 ? true : false;
+        int count = 0;
+        if(!StringUtils.isNullOrEmpty(addressid)){
+            address.setId(addressid);
+            address.setAddress(addressz);
+            address.setCode(usercode);
+            address.setName(name);
+            address.setPhone(phone);
+            // 编辑
+            count = addressMapper.updateByPrimaryKey(address);
+        }else{
+            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            address.setId(uuid);
+            address.setCode(usercode);
+            address.setAddress(addressz);
+            address.setPhone(phone);
+            address.setName(name);
+            count = addressMapper.insert(address);
+        }
+        return count>0 ? true : false;
     }
 }

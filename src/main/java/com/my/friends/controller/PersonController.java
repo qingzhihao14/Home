@@ -96,17 +96,18 @@ public class PersonController {
     @ApiOperation(value = "新增或更新类别信息")
     @PostMapping("/order")
     public Boolean getLb(
-            @ApiParam(value = "用户代码",required = false,defaultValue = "LB1") @RequestParam(required = false) String usercode,
-         @ApiParam(value = "项目代码",required = false,defaultValue = "LB1")  @RequestParam(required = false) String code,
-         @ApiParam(value = "订单编码",required = false,defaultValue = "LB1")  @RequestParam(required = false) String orderno,
-         @ApiParam(value = "支付金额",required = false,defaultValue = "0")  @RequestParam(required = false) Integer pay,
-            @ApiParam(value = "地址",required = false,defaultValue = "LB1")  @RequestParam(required = false) String address,
-            @ApiParam(value = "手机号",required = false,defaultValue = "LB1")  @RequestParam(required = false) String phone,
-            @ApiParam(value = "姓名",required = false,defaultValue = "LB1")  @RequestParam(required = false) String name,
-         @ApiParam(value = "服务时间",required = false,defaultValue = "LB1")  @RequestParam(required = false) String servicetime,
-         @ApiParam(value = "优惠券",required = false,defaultValue = "LB1")  @RequestParam(required = false) String coupon,
-         @ApiParam(value = "备注",required = false,defaultValue = "LB1")  @RequestParam(required = false) String note){
-        return personService.order( usercode,  code,  orderno,  pay,  address, phone, name,  servicetime,  coupon,  note);
+            @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
+            @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
+            @ApiParam(value = "订单编码",required = false,defaultValue = "")  @RequestParam(required = false) String orderno,
+            @ApiParam(value = "支付金额",required = false,defaultValue = "0")  @RequestParam(required = false) Integer pay,
+            @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "0")  @RequestParam(required = false) String addressid,
+            @ApiParam(value = "地址",required = false,defaultValue = "")  @RequestParam(required = false) String address,
+            @ApiParam(value = "手机号",required = false,defaultValue = "")  @RequestParam(required = false) String phone,
+            @ApiParam(value = "姓名",required = false,defaultValue = "")  @RequestParam(required = false) String name,
+            @ApiParam(value = "服务时间",required = false,defaultValue = "")  @RequestParam(required = false) String servicetime,
+            @ApiParam(value = "优惠券",required = false,defaultValue = "")  @RequestParam(required = false) String coupon,
+            @ApiParam(value = "备注",required = false,defaultValue = "")  @RequestParam(required = false) String note){
+        return personService.order( usercode,  code,  orderno,  pay, addressid,  address, phone, name,  servicetime,  coupon,  note);
     }
 
 
@@ -154,6 +155,7 @@ public class PersonController {
     @ApiOperation(value = "新增或更新地址信息")
     @PostMapping("/insertOrUpdateAddress")
     public Boolean getLb(
+            @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String addressid,
             @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
 //            @ApiParam(value = "地址编码",required = false,defaultValue = "") @RequestParam(required = false) String addressno,
             @ApiParam(value = "地址",required = false,defaultValue = "") @RequestParam(required = false) String address,
@@ -166,7 +168,7 @@ public class PersonController {
         ){
             return false;
         }
-        return personService.insertOrUpdateAddress(usercode,address,phone,name);
+        return personService.insertOrUpdateAddress(addressid,usercode,address,phone,name);
     }
 
 }

@@ -8,7 +8,9 @@ import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -16,19 +18,30 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication
 @Configuration
 @MapperScan(basePackages = {"com.my.friends.mapper"})
+@MapperScan("com.my.friends.mapper.extend")
 @EnableSwagger2
 @EnableSwaggerBootstrapUI
-public class FriendsApplication  {
+// extends SpringBootServletInitializer
+public class FriendsApplication{
 
     public static void main(String[] args) {
         SpringApplication.run(FriendsApplication.class,args);
     }
-//    //拦截所有请求
+    //重写configure方法，否则在部署到tomcat时，接口将访问不到
+//    @Override
+//    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+//        return super.configure(builder);
+//    }
+//
+//    /**
+//     * http重定向到https
+//     * @return
+//     */
 //    @Bean
 //    public TomcatServletWebServerFactory servletContainer() {
 //        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
 //            @Override
-//            protected void postProcessContext(Context context) {
+//            protected void postProcessContext(org.apache.catalina.Context context) {
 //                SecurityConstraint constraint = new SecurityConstraint();
 //                constraint.setUserConstraint("CONFIDENTIAL");
 //                SecurityCollection collection = new SecurityCollection();
@@ -41,17 +54,16 @@ public class FriendsApplication  {
 //        return tomcat;
 //    }
 //
-//    //配置http转https
 //    @Bean
 //    public Connector httpConnector() {
-//        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+//        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
 //        connector.setScheme("http");
-//        //Connector监听的http的端口号
-//        connector.setPort(80);
+//        //Connector监听的http的默认端口号
+//        //其中两个端口不能一样
+//        connector.setPort(8080);
 //        connector.setSecure(false);
-//        //监听到http的端口号后转向到的https的端口号
+//        //监听到http的端口号后转向到的https的端口号,也就是项目配置的port
 //        connector.setRedirectPort(443);
 //        return connector;
 //    }
-
 }

@@ -44,7 +44,7 @@ public interface PersonService {
     * note 备注
     * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    Boolean order(String usercode, String code, String orderno, Integer pay, String address,String phone,String name, String servicetime, String coupon, String note);
+    Boolean order(String usercode, String code, String orderno, Integer pay, String addressid, String address,String phone,String name, String servicetime, String coupon, String note);
 
 
     /*
@@ -66,5 +66,5 @@ public interface PersonService {
     //查询个人地址集合
     List<Address> getAddress(String usercode);
 
-    Boolean insertOrUpdateAddress(String usercode,String address,String phone,String name);
+    Boolean insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name);
 }
