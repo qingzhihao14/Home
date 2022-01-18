@@ -67,4 +67,13 @@ public interface PersonService {
     List<Address> getAddress(String usercode);
 
     Boolean insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name);
+
+
+    /*
+     * 6.管理员登录
+     * */
+    String adminlogin(Admin admin);
+
+     // 管理员创建和修改密码
+    public Boolean insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex);
 }

@@ -59,7 +59,7 @@ public class PersonController {
     // 1.2 新增或更新类别
     @ApiOperation(value = "新增或更新类别信息")
     @PostMapping("/insertOrUpdateLb")
-    public Boolean getLb(@RequestBody Lb lb){
+    public Boolean insertOrUpdateLb(@RequestBody Lb lb){
         return personService.insertOrUpdateLb(lb);
     }
 
@@ -95,7 +95,7 @@ public class PersonController {
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
     @ApiOperation(value = "新增或更新类别信息")
     @PostMapping("/order")
-    public Boolean getLb(
+    public Boolean order(
             @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
             @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
             @ApiParam(value = "订单编码",required = false,defaultValue = "")  @RequestParam(required = false) String orderno,
@@ -113,7 +113,7 @@ public class PersonController {
 
 
     /*
-     * 4.登录
+     * 4.用户登录
      * 根据【微信号】新增或获取账号信息
      * */
     // 1.1 登录
@@ -122,7 +122,7 @@ public class PersonController {
     public String login(@RequestBody User user){
         String wechat = user.getWechat();
         if(StringUtils.isNullOrEmpty(wechat)){
-            return "false";
+            return "登录失败";
         }
         return personService.login(user);
     }
@@ -154,13 +154,13 @@ public class PersonController {
     // 1.2 新增或更新地址信息
     @ApiOperation(value = "新增或更新地址信息")
     @PostMapping("/insertOrUpdateAddress")
-    public Boolean getLb(
+    public Boolean insertOrUpdateAddress(
             @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String addressid,
-            @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
+            @ApiParam(value = "用户代码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
 //            @ApiParam(value = "地址编码",required = false,defaultValue = "") @RequestParam(required = false) String addressno,
-            @ApiParam(value = "地址",required = false,defaultValue = "") @RequestParam(required = false) String address,
-            @ApiParam(value = "手机号",required = false,defaultValue = "") @RequestParam(required = false) String phone,
-            @ApiParam(value = "姓名",required = false,defaultValue = "") @RequestParam(required = false) String name){
+            @ApiParam(value = "地址（必传）",required = false,defaultValue = "") @RequestParam(required = false) String address,
+            @ApiParam(value = "手机号（必传）",required = false,defaultValue = "") @RequestParam(required = false) String phone,
+            @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name){
         if(StringUtils.isNullOrEmpty(usercode)
             || StringUtils.isNullOrEmpty(address)
             || StringUtils.isNullOrEmpty(phone)
@@ -169,6 +169,38 @@ public class PersonController {
             return false;
         }
         return personService.insertOrUpdateAddress(addressid,usercode,address,phone,name);
+    }
+    /*
+     * 6.管理员登录
+     * 根据【微信号】新增或获取账号信息
+     * */
+    // 1.1 登录
+    @ApiOperation(value = "管理员->登录")
+    @PostMapping("/adminlogin")
+    public String adminlogin(@RequestBody Admin admin){
+        String code = admin.getCode();
+        String psd = admin.getPsd();
+        if(StringUtils.isNullOrEmpty(code)&&StringUtils.isNullOrEmpty(psd)){
+            return "请输入用户名和密码";
+        }
+        return personService.adminlogin(admin);
+    }
+    // 1.2 管理员创建和修改密码
+    @ApiOperation(value = "管理员->创建和修改密码")
+    @PostMapping("/insertOrUpdateAdmin")
+    public Boolean insertOrUpdateAdmin(
+            @ApiParam(value = "id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String id,
+            @ApiParam(value = "用户代码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String code,
+            @ApiParam(value = "密码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String psd,
+            @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name,
+            @ApiParam(value = "性别（男1，女0）",required = false,defaultValue = "1") @RequestParam(required = false) Integer sex){
+        if(StringUtils.isNullOrEmpty(code)
+                || StringUtils.isNullOrEmpty(psd)
+                || StringUtils.isNullOrEmpty(name)
+        ){
+            return false;
+        }
+        return personService.insertOrUpdateAdmin(id,code,psd,name,sex);
     }
 
 }

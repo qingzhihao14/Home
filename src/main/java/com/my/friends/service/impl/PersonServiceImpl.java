@@ -39,6 +39,8 @@ public class PersonServiceImpl implements PersonService {
     private UserMapper userMapper;
     @Resource
     private LbXmMapper lbXmMapper;
+    @Resource
+    private AdminMapper adminMapper;
 
     @Override
     public Person getMyInfo(String WeChat) {
@@ -207,7 +209,7 @@ public class PersonServiceImpl implements PersonService {
         user.setCode(user.getWechat());
         int insert = userMapper.insert(user);
         Boolean flag= insert>0 ? true : false;
-        return flag? user.getId():"";
+        return flag? user.getId():"登录失败";
     }
 
     @Override
@@ -258,6 +260,49 @@ public class PersonServiceImpl implements PersonService {
             address.setPhone(phone);
             address.setName(name);
             count = addressMapper.insert(address);
+        }
+        return count>0 ? true : false;
+    }
+
+
+    /*
+     * 6.管理员登录
+     * */
+    @Override
+    public String adminlogin(Admin admin) {
+        String code = admin.getCode();
+        AdminExample example = new AdminExample();
+        example.createCriteria().andCodeEqualTo(code);
+        List<Admin> admins = adminMapper.selectByExample(example);
+        if(admins.size()>0){
+            return admins.get(0).getId();
+        }else{
+            return "登录失败";
+        }
+    }
+    /*
+     * 6.管理员创建和修改密码
+     * */
+    @Override
+    public Boolean insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex) {
+        Admin admin = new Admin();
+        int count = 0;
+        if(!StringUtils.isNullOrEmpty(id)){
+            admin.setId(id);
+            admin.setCode(code);
+            admin.setPsd(psd);
+            admin.setName(name);
+            admin.setSex(sex);
+            // 编辑
+            count = adminMapper.updateByPrimaryKey(admin);
+        }else{
+            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            admin.setId(uuid);
+            admin.setCode(code);
+            admin.setPsd(psd);
+            admin.setName(name);
+            admin.setSex(sex);
+            count = adminMapper.insert(admin);
         }
         return count>0 ? true : false;
     }
