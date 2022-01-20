@@ -2,6 +2,7 @@ package com.my.friends.service;
 
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
+import com.my.friends.utils.Result;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,8 @@ public interface PersonService {
     /*
      * 6.管理员登录
      * */
-    String adminlogin(Admin admin);
+    Result adminlogin(Admin admin);
+    Result admininfo(String token);
 
      // 管理员创建和修改密码
     public Boolean insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex);

@@ -5,17 +5,19 @@ import com.my.friends.dao.extend.LbXm;
 import com.my.friends.mapper.*;
 import com.my.friends.mapper.extend.LbXmMapper;
 import com.my.friends.service.PersonService;
+import com.my.friends.utils.CodeMsg;
+import com.my.friends.utils.JwtUtils;
+import com.my.friends.utils.Result;
 import com.mysql.jdbc.StringUtils;
 import com.sun.org.apache.regexp.internal.RE;
+import io.jsonwebtoken.Claims;
 import org.apache.catalina.mbeans.UserMBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.expression.CachedExpressionEvaluator;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +43,16 @@ public class PersonServiceImpl implements PersonService {
     private LbXmMapper lbXmMapper;
     @Resource
     private AdminMapper adminMapper;
+
+    /**
+     * 配置jwt
+     *
+     * @return
+     */
+    @Bean
+    public JwtUtils jwtUtils() {
+        return new JwtUtils();
+    }
 
     @Override
     public Person getMyInfo(String WeChat) {
@@ -269,16 +281,47 @@ public class PersonServiceImpl implements PersonService {
      * 6.管理员登录
      * */
     @Override
-    public String adminlogin(Admin admin) {
+    public Result adminlogin(Admin admin) {
         String code = admin.getCode();
         AdminExample example = new AdminExample();
         example.createCriteria().andCodeEqualTo(code);
         List<Admin> admins = adminMapper.selectByExample(example);
         if(admins.size()>0){
-            return admins.get(0).getId();
+            //登录失败
+            if (admins == null || !admin.getPsd().equals(admins.get(0).getPsd())) {
+                //既可以使用抛异常，也可使用直接返回错误码(推荐)
+                return Result.error(CodeMsg.USER_NOT_EXSIST,"用户名或密码错误");
+            } else {
+                //其他数据以map集合存放在token中
+                Map<String, Object> dataMap = new HashMap<>();
+                dataMap.put("id", admins.get(0).getId());
+                dataMap.put("name", admins.get(0).getName());
+                //生成token并存入数据返回
+                String token = jwtUtils().createJwt(admins.get(0).getId(), admins.get(0).getName(), dataMap);
+                HashMap<Object, Object> map = new HashMap<>();
+                map.put("token",token);
+                return Result.success(map);
+            }
         }else{
-            return "登录失败";
+            return Result.error(CodeMsg.USER_NOT_EXSIST);
         }
+    }
+    @Override
+    public Result admininfo(String token){
+        Claims claims = jwtUtils().parseJwt(token);
+        String id = claims.getId();
+        AdminExample example = new AdminExample();
+        example.createCriteria().andIdEqualTo(id);
+        List<Admin> admins = adminMapper.selectByExample(example);
+        Admin admin = admins.get(0);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("name",admin.getName());
+        ArrayList<String> arrayList = new ArrayList<>();
+        arrayList.add("admin");
+        map.put("roles",arrayList);
+        map.put("avatar","https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif");
+        map.put("introduction","测试I am a super administrator");
+        return Result.success(map);
     }
     /*
      * 6.管理员创建和修改密码

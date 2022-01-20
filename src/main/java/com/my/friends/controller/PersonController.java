@@ -3,6 +3,8 @@ package com.my.friends.controller;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
 import com.my.friends.service.PersonService;
+import com.my.friends.utils.CodeMsg;
+import com.my.friends.utils.Result;
 import com.mysql.jdbc.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -10,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -183,13 +186,26 @@ public class PersonController {
     // 1.1 登录
     @ApiOperation(value = "管理员->登录")
     @PostMapping("/adminlogin")
-    public String adminlogin(@RequestBody Admin admin){
-        String code = admin.getCode();
-        String psd = admin.getPsd();
+    public Result adminlogin(@RequestBody Map<String, String> params){
+        String code = params.get("username");
+        String psd = params.get("password");
         if(StringUtils.isNullOrEmpty(code)&&StringUtils.isNullOrEmpty(psd)){
-            return "请输入用户名和密码";
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"请输入用户名和密码");
         }
+        Admin admin = new Admin();
+        admin.setCode(code);
+        admin.setPsd(psd);
         return personService.adminlogin(admin);
+    }
+    // 1.1 登录
+    @ApiOperation(value = "管理员->获取管理员信息")
+    @PostMapping("/admininfo")
+    public Result admininfo(HttpServletRequest request){
+        String token = request.getParameter("token");
+        if(StringUtils.isNullOrEmpty(token)){
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"登陆失效，请重新登陆");
+        }
+        return personService.admininfo(token);
     }
     // 1.2 管理员创建和修改密码
     @ApiOperation(value = "管理员->创建和修改密码")

@@ -21,12 +21,11 @@ import java.util.Map;
 
 @Getter
 @Setter
-@ConfigurationProperties("jwt.config")
 public class JwtUtils {
     //签名私钥
-    private String key;
+    private String key="userloigin";
     //签名失效时间
-    private Long failureTime;
+    private Long failureTime = new Long(3600000);
 
     /**
      * 设置认证token
@@ -69,13 +68,5 @@ public class JwtUtils {
         Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
         return claims;
     }
-    /**
-     * 配置jwt
-     *
-     * @return
-     */
-    @Bean
-    public JwtUtils jwtUtils() {
-        return new JwtUtils();
-    }
+
 }
