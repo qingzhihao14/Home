@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/home")
@@ -119,11 +120,16 @@ public class PersonController {
     // 1.1 登录
     @ApiOperation(value = "根据【微信号】新增或获取账号信息")
     @PostMapping("/login")
-    public String login(@RequestBody User user){
-        String wechat = user.getWechat();
+    public String login(
+            @RequestBody Map<String,String> remap){
+        String wechat = remap.get("username");
+        String password = remap.get("password");
         if(StringUtils.isNullOrEmpty(wechat)){
             return "登录失败";
         }
+
+        User user = new User();
+        user.setWechat(wechat);
         return personService.login(user);
     }
     // 1.2 查询订单
