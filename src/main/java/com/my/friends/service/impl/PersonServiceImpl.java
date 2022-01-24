@@ -49,10 +49,11 @@ public class PersonServiceImpl implements PersonService {
      *
      * @return
      */
-    @Bean
-    public JwtUtils jwtUtils() {
-        return new JwtUtils();
-    }
+    JwtUtils jwtUtils = new JwtUtils();
+//    @Bean
+//    public JwtUtils jwtUtils() {
+//        return new JwtUtils();
+//    }
 
     @Override
     public Person getMyInfo(String WeChat) {
@@ -297,18 +298,18 @@ public class PersonServiceImpl implements PersonService {
                 dataMap.put("id", admins.get(0).getId());
                 dataMap.put("name", admins.get(0).getName());
                 //生成token并存入数据返回
-                String token = jwtUtils().createJwt(admins.get(0).getId(), admins.get(0).getName(), dataMap);
+                String token = jwtUtils.createJwt(admins.get(0).getId(), admins.get(0).getName(), dataMap);
                 HashMap<Object, Object> map = new HashMap<>();
                 map.put("token",token);
                 return Result.success(map);
             }
         }else{
-            return Result.error(CodeMsg.USER_NOT_EXSIST);
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"用户名或密码错误");
         }
     }
     @Override
     public Result admininfo(String token){
-        Claims claims = jwtUtils().parseJwt(token);
+        Claims claims = jwtUtils.parseJwt(token);
         String id = claims.getId();
         AdminExample example = new AdminExample();
         example.createCriteria().andIdEqualTo(id);

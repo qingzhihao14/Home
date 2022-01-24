@@ -6,14 +6,16 @@ import com.my.friends.service.PersonService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
 import com.mysql.jdbc.StringUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -121,11 +123,17 @@ public class PersonController {
      * 根据【微信号】新增或获取账号信息
      * */
     // 1.1 登录
-    @ApiOperation(value = "根据【微信号】新增或获取账号信息")
-    @PostMapping("/login")
+    @ApiOperation(value = "根据【微信号】新增或获取账号信息"
+//                ,produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE
+                )
+    @GetMapping(path = "/login"
+//            ,consumes = "application/json", produces = "application/json"
+            )
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query",name = "username",value ="微信号",dataType ="String")})
     public String login(
-            @RequestBody Map<String,String> remap){
-        String wechat = remap.get("username");
+            @ApiIgnore @RequestParam(required = false) Map<String,String> remap){
+        String wechat = remap.get("wechat");
         String password = remap.get("password");
         if(StringUtils.isNullOrEmpty(wechat)){
             return "登录失败";
@@ -186,11 +194,14 @@ public class PersonController {
     // 1.1 登录
     @ApiOperation(value = "管理员->登录")
     @PostMapping("/adminlogin")
-    public Result adminlogin(@RequestBody Map<String, String> params){
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query",name = "username",value ="账号",dataType ="String"),
+            @ApiImplicitParam(paramType = "query",name = "password",value ="密码",dataType ="String")})
+    public Result adminlogin(@ApiIgnore @RequestParam(required = false) Map<String, String> params){
         String code = params.get("username");
         String psd = params.get("password");
         if(StringUtils.isNullOrEmpty(code)&&StringUtils.isNullOrEmpty(psd)){
-            return Result.error(CodeMsg.USER_NOT_EXSIST,"请输入用户名和密码");
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"用户名或密码错误");
         }
         Admin admin = new Admin();
         admin.setCode(code);
