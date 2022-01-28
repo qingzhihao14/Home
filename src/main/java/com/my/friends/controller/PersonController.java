@@ -1,5 +1,6 @@
 package com.my.friends.controller;
 
+import cn.hutool.core.util.IdUtil;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
 import com.my.friends.service.PersonService;
@@ -11,9 +12,11 @@ import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,7 +103,7 @@ public class PersonController {
      * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
     @ApiOperation(value = "新增或更新类别信息")
-    @PostMapping("/order")
+    @RequestMapping(value = "/order", method = {RequestMethod.POST, RequestMethod.GET})
     public Boolean order(
             @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
             @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
@@ -112,8 +115,9 @@ public class PersonController {
             @ApiParam(value = "姓名",required = false,defaultValue = "")  @RequestParam(required = false) String name,
             @ApiParam(value = "服务时间",required = false,defaultValue = "")  @RequestParam(required = false) String servicetime,
             @ApiParam(value = "优惠券",required = false,defaultValue = "")  @RequestParam(required = false) String coupon,
-            @ApiParam(value = "备注",required = false,defaultValue = "")  @RequestParam(required = false) String note){
-        return personService.order( usercode,  code,  orderno,  pay, addressid,  address, phone, name,  servicetime,  coupon,  note);
+            @ApiParam(value = "备注",required = false,defaultValue = "")  @RequestParam(required = false) String note,
+    @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files){
+        return personService.order( usercode,  code,  orderno,  pay, addressid,  address, phone, name,  servicetime,  coupon,  note, files);
     }
 
 
@@ -153,7 +157,16 @@ public class PersonController {
         }
         return personService.getOrder(usercode);
     }
-
+    // 1.3 查询订单-图片
+    @ApiOperation(value = "查询订单-图片")
+    @GetMapping("/getPictureByOrderno")
+    public ArrayList<Picture> getPictureByOrderno(
+            @ApiParam(value = "订单号",required = false,defaultValue = "dd202201011212") @RequestParam(required = false) String Orderno){
+        if(StringUtils.isNullOrEmpty(Orderno)){
+            return new ArrayList<>();
+        }
+        return personService.getPictures(Orderno);
+    }
 
     /*
      * 5.地址

@@ -2,6 +2,8 @@ package com.my.friends.mapper;
 
 import com.my.friends.dao.Picture;
 import com.my.friends.dao.PictureExample;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,7 +18,7 @@ public interface PictureMapper {
 
     int insertSelective(Picture record);
 
-    List<Picture> selectByExample(PictureExample example);
+    ArrayList<Picture> selectByExample(PictureExample example);
 
     Picture selectByPrimaryKey(String id);
 
