@@ -24,7 +24,7 @@ public interface PersonService {
     ArrayList<Lb> getLb();
     Boolean insertOrUpdateLb(Lb lb);
     //查询
-    ArrayList<LbXm> selectLbXm(String parent);
+    Result selectLbXm(String parent);
 
 
     /*

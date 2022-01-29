@@ -96,8 +96,14 @@ public class PersonServiceImpl implements PersonService {
     * 0.查询类别、项目
     * */
     @Override
-    public ArrayList selectLbXm(String parent) {
-        return lbXmMapper.selectLbXm(parent);
+    public Result selectLbXm(String parent) {
+
+        ArrayList<LbXm> list = lbXmMapper.selectLbXm(parent);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"类别号为空");
+        }
     }
     /*
      * 1.类别

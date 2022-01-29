@@ -52,8 +52,11 @@ public class PersonController {
      * */
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLbXms")
-    public List<LbXm> getLbXms(@ApiParam(value = "类别号",required = false,defaultValue = "LB1")
+    public Result getLbXms(@ApiParam(value = "类别号",required = false,defaultValue = "LB1")
                              @RequestParam(required = false) String parent){
+        if(StringUtils.isNullOrEmpty(parent)){
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"类别号为空");
+        }
         return personService.selectLbXm(parent);
     }
 
