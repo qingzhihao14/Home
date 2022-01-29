@@ -1,6 +1,7 @@
 package com.my.friends.controller;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.log.Log;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
 import com.my.friends.service.PersonService;
@@ -206,15 +207,17 @@ public class PersonController {
      * */
     // 1.1 登录
     @ApiOperation(value = "管理员->登录")
-    @PostMapping("/adminlogin")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query",name = "username",value ="账号",dataType ="String"),
-            @ApiImplicitParam(paramType = "query",name = "password",value ="密码",dataType ="String")})
-    public Result adminlogin(@ApiIgnore @RequestParam(required = false) Map<String, String> params){
+    @RequestMapping(value = "/adminlogin", method = {RequestMethod.POST, RequestMethod.GET})
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(paramType = "query",name = "username",value ="账号",dataType ="String"),
+//            @ApiImplicitParam(paramType = "query",name = "password",value ="密码",dataType ="String")})
+    public Result adminlogin(
+//            @ApiIgnore
+            @RequestBody(required = false) Map<String, String> params){
         String code = params.get("username");
         String psd = params.get("password");
         if(StringUtils.isNullOrEmpty(code)&&StringUtils.isNullOrEmpty(psd)){
-            return Result.error(CodeMsg.USER_NOT_EXSIST,"用户名或密码错误");
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"用户名或密码不能为空");
         }
         Admin admin = new Admin();
         admin.setCode(code);

@@ -367,7 +367,7 @@ public class PersonServiceImpl implements PersonService {
                 return Result.success(map);
             }
         }else{
-            return Result.error(CodeMsg.USER_NOT_EXSIST,"用户名或密码错误");
+            return Result.error(CodeMsg.USER_NOT_EXSIST,"用户不存在");
         }
     }
     @Override

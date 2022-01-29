@@ -60,7 +60,11 @@ public class Result<T> {
      * @return
      */
     public static <T> Result<T> error(CodeMsg cm,String msg){
-        cm.setMessage(cm.getMessage()+"--"+msg);
+        if(cm.getMessage().contains("：")){
+            cm.setMessage(cm.getMessage());
+        }else{
+            cm.setMessage(cm.getMessage()+"："+msg);
+        }
         return new Result<T>(cm);
     }
     public T getData() {
