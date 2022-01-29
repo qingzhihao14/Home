@@ -19,6 +19,7 @@ public class CodeMsg {
     public static CodeMsg ONLINE_USER_OVER = new CodeMsg(500103,"在线用户数超出允许登录的最大用户限制。");
     public static CodeMsg SESSION_NOT_EXSIST =  new CodeMsg(500104,"不存在离线session数据");
     public static CodeMsg NOT_FIND_DATA = new CodeMsg(500105,"查找不到对应数据");
+    public static CodeMsg OP_FAILED = new CodeMsg(500105,"操作失败");
 
     private CodeMsg(int code, String message) {
         this.code = code;

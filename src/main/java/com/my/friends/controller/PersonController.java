@@ -52,11 +52,11 @@ public class PersonController {
      * */
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLbXms")
-    public Result getLbXms(@ApiParam(value = "类别号",required = false,defaultValue = "LB1")
+    public Result getLbXms(@ApiParam(value = "类别号(传空查询所有)",required = false,defaultValue = "LB1")
                              @RequestParam(required = false) String parent){
-        if(StringUtils.isNullOrEmpty(parent)){
-            return Result.error(CodeMsg.USER_NOT_EXSIST,"类别号为空");
-        }
+//        if(StringUtils.isNullOrEmpty(parent)){
+//            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
+//        }
         return personService.selectLbXm(parent);
     }
 
@@ -66,13 +66,22 @@ public class PersonController {
     // 1.1 查询类别
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLb")
-    public ArrayList<Lb> getLb(){
+    public Result getLb(){
         return personService.getLb();
     }
     // 1.2 新增或更新类别
     @ApiOperation(value = "新增或更新类别信息")
-    @PostMapping("/insertOrUpdateLb")
-    public Boolean insertOrUpdateLb(@RequestBody Lb lb){
+//    @PostMapping("/insertOrUpdateLb")
+    @RequestMapping(value = "/insertOrUpdateLb", method = {RequestMethod.POST})
+    public Result insertOrUpdateLb(@RequestBody Map<String,String> remap){
+        String id = remap.get("id");
+        if(StringUtils.isNullOrEmpty(id)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
+        }
+        Lb lb = new Lb();
+        lb.setId(id);
+        lb.setCode(remap.get("code"));
+        lb.setName(remap.get("name"));
         return personService.insertOrUpdateLb(lb);
     }
 
@@ -82,12 +91,31 @@ public class PersonController {
     * */
     // 1.1 新增或更新项目
     @ApiOperation(value = "新增或更新项目信息")
-    @PostMapping("/insertOrUpdateLbItem")
-    public Boolean insertOrUpdateItem(@RequestBody LbItem lbItem){
-        String parent = lbItem.getParent();
+//    @PostMapping("/insertOrUpdateLbItem")
+    @RequestMapping(value = "/insertOrUpdateLb", method = {RequestMethod.POST})
+    public Result insertOrUpdateItem(@RequestBody Map<String,String> remap){
+        String parent = remap.get("parent");
         if(StringUtils.isNullOrEmpty(parent)){
-            return false;
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
         }
+        LbItem lbItem = new LbItem();
+        lbItem.setId(remap.get("id"));
+        lbItem.setCode(remap.get("code"));
+        lbItem.setName(remap.get("name"));
+        lbItem.setFwbz(remap.get("fwbz"));
+        lbItem.setFwqx(remap.get("fwqx"));
+        lbItem.setFwxj(remap.get("fwxj"));
+        lbItem.setFwxz(remap.get("fwxz"));
+        lbItem.setParent(remap.get("parent"));
+        String price = remap.get("price");
+        if(StringUtils.isNullOrEmpty(price)){
+            lbItem.setPrice(Integer.parseInt(price));
+        }
+        String sold = remap.get("sold");
+        if(StringUtils.isNullOrEmpty(sold)){
+            lbItem.setSold(Integer.parseInt(sold));
+        }
+        lbItem.setUnit(remap.get("unit"));
         return personService.insertOrUpdateItem(lbItem);
     }
 
@@ -106,9 +134,9 @@ public class PersonController {
      * note 备注
      * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    @ApiOperation(value = "新增或更新类别信息")
-    @RequestMapping(value = "/order", method = {RequestMethod.POST, RequestMethod.GET})
-    public Boolean order(
+    @ApiOperation(value = "下单")
+    @RequestMapping(value = "/order", method = {RequestMethod.GET})
+    public Result order(
             @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
             @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
             @ApiParam(value = "订单编码",required = false,defaultValue = "")  @RequestParam(required = false) String orderno,
@@ -139,14 +167,13 @@ public class PersonController {
             )
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query",name = "username",value ="微信号",dataType ="String")})
-    public String login(
+    public Result login(
             @ApiIgnore @RequestParam(required = false) Map<String,String> remap){
         String wechat = remap.get("wechat");
         String password = remap.get("password");
         if(StringUtils.isNullOrEmpty(wechat)){
-            return "登录失败";
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"微信号为空");
         }
-
         User user = new User();
         user.setWechat(wechat);
         return personService.login(user);
@@ -154,20 +181,20 @@ public class PersonController {
     // 1.2 查询订单
     @ApiOperation(value = "查询订单")
     @GetMapping("/getOrder")
-    public List<Order> getOrder(
+    public Result getOrder(
             @ApiParam(value = "用户代码",required = false,defaultValue = "LB1") @RequestParam(required = false) String usercode){
         if(StringUtils.isNullOrEmpty(usercode)){
-            return null;
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
         }
         return personService.getOrder(usercode);
     }
     // 1.3 查询订单-图片
     @ApiOperation(value = "查询订单-图片")
     @GetMapping("/getPictureByOrderno")
-    public ArrayList<Picture> getPictureByOrderno(
+    public Result getPictureByOrderno(
             @ApiParam(value = "订单号",required = false,defaultValue = "dd202201011212") @RequestParam(required = false) String Orderno){
         if(StringUtils.isNullOrEmpty(Orderno)){
-            return new ArrayList<>();
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"订单号为空");
         }
         return personService.getPictures(Orderno);
     }
@@ -178,30 +205,36 @@ public class PersonController {
     // 1.1 查询地址
     @ApiOperation(value = "获取地址信息")
     @GetMapping("/getAddress")
-    public List<Address> getAddress(
-            @ApiParam(value = "用户代码",required = false,defaultValue = "LB1") @RequestParam(required = false) String usercode){
+    public Result getAddress(
+            @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode){
         if(StringUtils.isNullOrEmpty(usercode)){
-            return null;
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
         }
         return personService.getAddress(usercode);
     }
     // 1.2 新增或更新地址信息
     @ApiOperation(value = "新增或更新地址信息")
     @PostMapping("/insertOrUpdateAddress")
-    public Boolean insertOrUpdateAddress(
+    public Result insertOrUpdateAddress(
             @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String addressid,
             @ApiParam(value = "用户代码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
 //            @ApiParam(value = "地址编码",required = false,defaultValue = "") @RequestParam(required = false) String addressno,
             @ApiParam(value = "地址（必传）",required = false,defaultValue = "") @RequestParam(required = false) String address,
             @ApiParam(value = "手机号（必传）",required = false,defaultValue = "") @RequestParam(required = false) String phone,
             @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name){
-        if(StringUtils.isNullOrEmpty(usercode)
-            || StringUtils.isNullOrEmpty(address)
-            || StringUtils.isNullOrEmpty(phone)
-            || StringUtils.isNullOrEmpty(name)
-        ){
-            return false;
+        if(StringUtils.isNullOrEmpty(usercode)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
         }
+        if(StringUtils.isNullOrEmpty(address)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"地址为空");
+        }
+        if(StringUtils.isNullOrEmpty(phone)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"手机号为空");
+        }
+        if(StringUtils.isNullOrEmpty(name)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"姓名为空");
+        }
+
         return personService.insertOrUpdateAddress(addressid,usercode,address,phone,name);
     }
     /*
@@ -210,7 +243,8 @@ public class PersonController {
      * */
     // 1.1 登录
     @ApiOperation(value = "管理员->登录")
-    @RequestMapping(value = "/adminlogin", method = {RequestMethod.POST, RequestMethod.GET})
+//    @RequestMapping(value = "/adminlogin", method = {RequestMethod.POST, RequestMethod.GET})
+    @RequestMapping(value = "/adminlogin", method = {RequestMethod.POST})
 //    @ApiImplicitParams({
 //            @ApiImplicitParam(paramType = "query",name = "username",value ="账号",dataType ="String"),
 //            @ApiImplicitParam(paramType = "query",name = "password",value ="密码",dataType ="String")})
@@ -233,24 +267,24 @@ public class PersonController {
     public Result admininfo(HttpServletRequest request){
         String token = request.getParameter("token");
         if(StringUtils.isNullOrEmpty(token)){
-            return Result.error(CodeMsg.USER_NOT_EXSIST,"登陆失效，请重新登陆");
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"登陆失效，请重新登陆");
         }
         return personService.admininfo(token);
     }
     // 1.2 管理员创建和修改密码
     @ApiOperation(value = "管理员->创建和修改密码")
     @PostMapping("/insertOrUpdateAdmin")
-    public Boolean insertOrUpdateAdmin(
+    public Result insertOrUpdateAdmin(
             @ApiParam(value = "id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String id,
             @ApiParam(value = "用户代码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String code,
             @ApiParam(value = "密码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String psd,
             @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name,
             @ApiParam(value = "性别（男1，女0）",required = false,defaultValue = "1") @RequestParam(required = false) Integer sex){
-        if(StringUtils.isNullOrEmpty(code)
-                || StringUtils.isNullOrEmpty(psd)
-                || StringUtils.isNullOrEmpty(name)
-        ){
-            return false;
+        if(StringUtils.isNullOrEmpty(code)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
+        }
+        if(StringUtils.isNullOrEmpty(psd)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"密码为空");
         }
         return personService.insertOrUpdateAdmin(id,code,psd,name,sex);
     }

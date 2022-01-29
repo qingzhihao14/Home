@@ -21,8 +21,8 @@ public interface PersonService {
     * */
 
     //查询
-    ArrayList<Lb> getLb();
-    Boolean insertOrUpdateLb(Lb lb);
+    Result getLb();
+    Result insertOrUpdateLb(Lb lb);
     //查询
     Result selectLbXm(String parent);
 
@@ -30,7 +30,7 @@ public interface PersonService {
     /*
      * 2.项目
      * */
-    Boolean insertOrUpdateItem(LbItem lbItem);
+    Result insertOrUpdateItem(LbItem lbItem);
 
     /*
     *
@@ -46,19 +46,19 @@ public interface PersonService {
     * note 备注
     * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    Boolean order(String usercode, String code, String orderno, Integer pay, String addressid, String address, String phone, String name, String servicetime, String coupon, String note, MultipartFile[] files);
+    Result order(String usercode, String code, String orderno, Integer pay, String addressid, String address, String phone, String name, String servicetime, String coupon, String note, MultipartFile[] files);
 
 
     /*
      * 4.用户信息
      * */
     // 新增或更新项目
-    String login(User user);
+    Result login(User user);
 
     //查询个人订单信息
-    List<Order> getOrder(String usercode);
+    Result getOrder(String usercode);
     //查询个人订单信息
-    ArrayList<Picture> getPictures(String orderno);
+    Result getPictures(String orderno);
 
 
     /*
@@ -68,9 +68,9 @@ public interface PersonService {
     //查询d订单地址
     Address getAddressById(String id);
     //查询个人地址集合
-    List<Address> getAddress(String usercode);
+    Result getAddress(String usercode);
 
-    Boolean insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name);
+    Result insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name);
 
 
     /*
@@ -80,5 +80,5 @@ public interface PersonService {
     Result admininfo(String token);
 
      // 管理员创建和修改密码
-    public Boolean insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex);
+    Result insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex);
 }

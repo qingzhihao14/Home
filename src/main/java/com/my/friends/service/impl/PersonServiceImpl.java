@@ -102,7 +102,7 @@ public class PersonServiceImpl implements PersonService {
         if(list.size()>0){
             return Result.success(list);
         }else{
-            return Result.error(CodeMsg.USER_NOT_EXSIST,"类别号为空");
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无效的类别号");
         }
     }
     /*
@@ -111,22 +111,30 @@ public class PersonServiceImpl implements PersonService {
 
     // 1.1查询
     @Override
-    public ArrayList<Lb> getLb() {
+    public Result getLb() {
         LbExample example = new LbExample();
         example.createCriteria().andIdIsNotNull();
-        ArrayList<Lb> lbs = lbMapper.selectByExample(example);
-        return lbs;
+        ArrayList<Lb> list = lbMapper.selectByExample(example);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无类别数据，请添加");
+        }
     }
     //1.2新增
     @Override
-    public Boolean insertOrUpdateLb(Lb lb) {
-
+    public Result insertOrUpdateLb(Lb lb) {
         LbExample example = new LbExample();
         int count = 0;
         if(!"".equals(lb.getId()) && lb.getId()!= null){
             // 编辑
             example.createCriteria().andIdEqualTo(lb.getId());
             count = lbMapper.updateByExample(lb, example);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
         }else{
             // 新增
             String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
@@ -144,8 +152,12 @@ public class PersonServiceImpl implements PersonService {
                 lb.setCode("LB"+(max+1));
             }
             count = lbMapper.insert(lb);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"新增失败");
+            }
         }
-        return count>0?true:false;
     }
 
 
@@ -157,7 +169,7 @@ public class PersonServiceImpl implements PersonService {
 
     //1.1新增
     @Override
-    public Boolean insertOrUpdateItem(LbItem lbItem) {
+    public Result insertOrUpdateItem(LbItem lbItem) {
 
         LbItemExample example = new LbItemExample();
         int count = 0;
@@ -165,6 +177,11 @@ public class PersonServiceImpl implements PersonService {
             // 编辑
             example.createCriteria().andIdEqualTo(lbItem.getId());
             count = lbItemMapper.updateByExample(lbItem, example);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
         }else{
             // 新增
             String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
@@ -182,8 +199,12 @@ public class PersonServiceImpl implements PersonService {
                 lbItem.setCode("XM"+(max+1));
             }
             count = lbItemMapper.insert(lbItem);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"新增失败");
+            }
         }
-        return count>0?true:false;
     }
 
     /*
@@ -201,7 +222,7 @@ public class PersonServiceImpl implements PersonService {
      * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
     @Override
-    public Boolean order(
+    public Result order(
             String usercode, String code, String orderno, Integer pay, String addressid, String address,String phone,String name,
             String servicetime, String coupon, String note, MultipartFile[] files) {
         Order order = new Order();
@@ -212,57 +233,61 @@ public class PersonServiceImpl implements PersonService {
         order.setCode(code);
         order.setOrderno(orderno);
         order.setPay(pay);
-        Boolean myOrder = this.insertOrUpdateAddress(addressid, usercode, address, phone, name);
-        if(!myOrder){
-            return false;
+        Result myOrderResult = this.insertOrUpdateAddress(addressid, usercode, address, phone, name);
+        if(myOrderResult.getCode()!=0){
+            return myOrderResult;
         }
         order.setAddressno(addressid);
         order.setServicetime(servicetime);
         order.setCoupon(coupon);
         order.setNote(note);
-        int insert = orderMapper.insert(order);
-        ArrayList<Picture> pictureList = new ArrayList<>();
-        for(MultipartFile mf: files) {
-            String id = IdUtil.simpleUUID().substring(0, 15);
-            String original_name = mf.getOriginalFilename();
-            //            String fileType = mf.getContentType();
-            String file_name = "home_" + id + '.' + FileUtil.getSuffix(original_name);
-            String path = (File.separator + file_name).replaceAll("\\\\", "/");
-            String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
-            Picture picture = new Picture();
-            picture.setId(id);
-            picture.setOrderno(orderno);
-            picture.setName(file_name);
-            picture.setPath(path);
-            picture.setType(FileUtil.getSuffix(original_name));
-            try {
-                // 创建本地文件存放 文件夹 路径实例
-                File dest = new File(baseAddress);
-                // 判断本地 文件夹 不存在就创建
-                if (!dest.exists()) {
-                    dest.mkdirs();
+        int count = orderMapper.insert(order);
+        if(count>0){
+            ArrayList<Picture> pictureList = new ArrayList<>();
+            for(MultipartFile mf: files) {
+                String id = IdUtil.simpleUUID().substring(0, 15);
+                String original_name = mf.getOriginalFilename();
+                //            String fileType = mf.getContentType();
+                String file_name = "home_" + id + '.' + FileUtil.getSuffix(original_name);
+                String path = (File.separator + file_name).replaceAll("\\\\", "/");
+                String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
+                Picture picture = new Picture();
+                picture.setId(id);
+                picture.setOrderno(orderno);
+                picture.setName(file_name);
+                picture.setPath(path);
+                picture.setType(FileUtil.getSuffix(original_name));
+                try {
+                    // 创建本地文件存放 文件夹 路径实例
+                    File dest = new File(baseAddress);
+                    // 判断本地 文件夹 不存在就创建
+                    if (!dest.exists()) {
+                        dest.mkdirs();
+                    }
+                    // 创建文件实例
+                    File uploadFile = FileUtil.file(newfilePath);
+                    // 如果文件在本地存在就删除
+                    if (uploadFile.exists()) {
+                        uploadFile.delete();
+                    }
+                    mf.transferTo(uploadFile);
+                    pictureList.add(picture);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
+                    return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
                 }
-                // 创建文件实例
-                File uploadFile = FileUtil.file(newfilePath);
-                // 如果文件在本地存在就删除
-                if (uploadFile.exists()) {
-                    uploadFile.delete();
-                }
-                mf.transferTo(uploadFile);
-                pictureList.add(picture);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
-                return false;
             }
+            if(pictureList.size()>0){
+                pictureList.forEach(picture -> {
+                    pictureMapper.insert(picture);
+                });
+            }
+            return Result.success();
+        }else{
+            return Result.error(CodeMsg.OP_FAILED,"新增失败");
         }
-        if(pictureList.size()>0){
-            pictureList.forEach(picture -> {
-                pictureMapper.insert(picture);
-            });
-        }
-        return true;
     }
 
     /*
@@ -270,36 +295,50 @@ public class PersonServiceImpl implements PersonService {
      * */
     // 1.1 新增或更新项目
     @Override
-    public String login(User user) {
+    public Result login(User user) {
         String wechat = user.getWechat();
         UserExample example = new UserExample();
         example.createCriteria().andWechatEqualTo(wechat);
         List<User> users = userMapper.selectByExample(example);
-        if(users.size()>0){
-            return users.get(0).getId();
+        if (users.size() > 0) {
+            // 再次登录的用户
+            HashMap<String, String> map = new HashMap<>();
+            map.put("id", users.get(0).getId());
         }
+        // 第一次登录，添加用户
         String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
         user.setId(uuid);
         user.setCode(user.getWechat());
-        int insert = userMapper.insert(user);
-        Boolean flag= insert>0 ? true : false;
-        return flag? user.getId():"登录失败";
+        int count = userMapper.insert(user);
+        if (count > 0) {
+            return Result.success();
+        } else {
+            return Result.error(CodeMsg.OP_FAILED, "登录失败");
+        }
     }
 
     @Override
-    public List<Order> getOrder(String usercode) {
+    public Result getOrder(String usercode) {
         OrderExample example = new OrderExample();
         example.createCriteria().andUsercodeEqualTo(usercode);
-        List<Order> orders = orderMapper.selectByExample(example);
-        return orders;
+        List<Order> list = orderMapper.selectByExample(example);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无类别数据，请添加");
+        }
     }
 
     @Override
-    public ArrayList<Picture> getPictures(String orderno) {
+    public Result getPictures(String orderno) {
         PictureExample example = new PictureExample();
         example.createCriteria().andOrdernoEqualTo(orderno);
-        ArrayList<Picture> pictures = pictureMapper.selectByExample(example);
-        return pictures;
+        ArrayList<Picture> list = pictureMapper.selectByExample(example);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无图片，请上传");
+        }
     }
 
     //查询d订单地址
@@ -315,15 +354,19 @@ public class PersonServiceImpl implements PersonService {
         }
     }
     @Override
-    public List<Address> getAddress(String usercode) {
+    public Result getAddress(String usercode) {
         AddressExample example = new AddressExample();
         example.createCriteria().andCodeEqualTo(usercode);
-        List<Address> addresses = addressMapper.selectByExample(example);
-        return addresses;
+        List<Address> list = addressMapper.selectByExample(example);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无地址信息，请添加");
+        }
     }
 
     @Override
-    public Boolean insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name) {
+    public Result insertOrUpdateAddress(String addressid,String usercode,String addressz,String phone,String name) {
         Address address = new Address();
         int count = 0;
         if(!StringUtils.isNullOrEmpty(addressid)){
@@ -334,6 +377,11 @@ public class PersonServiceImpl implements PersonService {
             address.setPhone(phone);
             // 编辑
             count = addressMapper.updateByPrimaryKey(address);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
         }else{
             String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
             address.setId(uuid);
@@ -342,8 +390,12 @@ public class PersonServiceImpl implements PersonService {
             address.setPhone(phone);
             address.setName(name);
             count = addressMapper.insert(address);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"新增失败");
+            }
         }
-        return count>0 ? true : false;
     }
 
 
@@ -397,7 +449,7 @@ public class PersonServiceImpl implements PersonService {
      * 6.管理员创建和修改密码
      * */
     @Override
-    public Boolean insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex) {
+    public Result insertOrUpdateAdmin(String id,String code,String psd,String name,Integer sex) {
         Admin admin = new Admin();
         int count = 0;
         if(!StringUtils.isNullOrEmpty(id)){
@@ -408,6 +460,11 @@ public class PersonServiceImpl implements PersonService {
             admin.setSex(sex);
             // 编辑
             count = adminMapper.updateByPrimaryKey(admin);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
         }else{
             String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
             admin.setId(uuid);
@@ -416,7 +473,11 @@ public class PersonServiceImpl implements PersonService {
             admin.setName(name);
             admin.setSex(sex);
             count = adminMapper.insert(admin);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"新增失败");
+            }
         }
-        return count>0 ? true : false;
     }
 }
