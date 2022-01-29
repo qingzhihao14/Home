@@ -25,7 +25,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/home")
-@Api(description = "信息管理")
+@Api(description = "信息管理", hidden=true)
 public class PersonController {
     @Autowired
     private PersonService personService;
@@ -92,7 +92,7 @@ public class PersonController {
     // 1.1 新增或更新项目
     @ApiOperation(value = "新增或更新项目信息")
 //    @PostMapping("/insertOrUpdateLbItem")
-    @RequestMapping(value = "/insertOrUpdateLb", method = {RequestMethod.POST})
+    @RequestMapping(value = "/insertOrUpdateLbItem", method = {RequestMethod.POST})
     public Result insertOrUpdateItem(@RequestBody Map<String,String> remap){
         String parent = remap.get("parent");
         if(StringUtils.isNullOrEmpty(parent)){
