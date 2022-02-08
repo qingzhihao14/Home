@@ -7,8 +7,10 @@ import com.my.friends.dao.extend.LbXm;
 import com.my.friends.service.PersonService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
+import com.my.friends.utils.SHA1;
 import com.mysql.jdbc.StringUtils;
 import io.swagger.annotations.*;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +33,38 @@ import java.util.Map;
 public class PersonController {
     @Autowired
     private PersonService personService;
+    private static final
+    org.apache.commons.logging.Log log= LogFactory.getLog(PersonController.class);
+
+    @GetMapping("/init")
+    public String init(HttpServletRequest req, HttpServletResponse resp) throws NoSuchAlgorithmException, IOException
+    {
+        String signature = req.getParameter("signature");
+        String timestamp = req.getParameter("timestamp");
+        String nonce = req.getParameter("nonce");
+        String echostr = req.getParameter("echostr");
+        String[] arr = {"zhbcm", timestamp, nonce};
+        Arrays.sort(arr);//排序
+        StringBuilder builder = new StringBuilder();
+        for (String s : arr)
+        {
+            builder.append(s);//合并
+        }
+        String sha1 = SHA1.sha1(builder.toString());//加密
+        if (sha1.equals(signature))
+        {
+//            PrintWriter pw = resp.getWriter();
+//            pw.println(echostr);
+//            pw.flush();
+//            pw.close();
+            log.info("接入成功！");
+            return echostr;
+        } else
+        {
+            log.error("接入失败！");
+            return echostr;
+        }
+    }
 //
 //    @ApiOperation(value = "获取用户信息")
 //    @GetMapping("/getMyInfo")
