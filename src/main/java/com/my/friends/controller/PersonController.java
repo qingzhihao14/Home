@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.log.Log;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
+import com.my.friends.service.CommandService;
 import com.my.friends.service.PersonService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
@@ -13,6 +14,7 @@ import io.swagger.annotations.*;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +22,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -32,7 +35,12 @@ import java.util.Map;
 @Api(description = "信息管理", hidden=true)
 public class PersonController {
     @Autowired
+    private CommandService commandService;
+
+    @Autowired
     private PersonService personService;
+    private String mysession;
+
     private static final
     org.apache.commons.logging.Log log= LogFactory.getLog(PersonController.class);
 
@@ -88,11 +96,21 @@ public class PersonController {
      * */
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLbXms")
-    public Result getLbXms(@ApiParam(value = "类别号(传空查询所有)",required = false,defaultValue = "LB1")
-                             @RequestParam(required = false) String parent){
+    public Result getLbXms(HttpServletRequest request,
+                           @ApiParam(value = "类别号(传空查询所有)",required = false,defaultValue = "LB1")
+                           @RequestParam(required = false) String parent){
 //        if(StringUtils.isNullOrEmpty(parent)){
 //            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
 //        }
+        log.info("开始执行！");
+        log.info("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
+        String s = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
+        HttpSession session = request.getSession();
+        //以秒为单位，即在没有活动30分钟后，session将失效
+        session.setMaxInactiveInterval(30*60);
+        session.setAttribute(s, "微信公众号：骄傲的程序员");
+        mysession = s;
+        log.info("设置Session成功{key="+s+",value=微信公众号：骄傲的程序员}");
         return personService.selectLbXm(parent);
     }
 
@@ -102,7 +120,11 @@ public class PersonController {
     // 1.1 查询类别
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLb")
-    public Result getLb(){
+    public Result getLb(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        log.info("开始获取到的Session="+mysession);
+        String data = (String) session.getAttribute(mysession);
+        log.info("获取到的Session的Key="+data);
         return personService.getLb();
     }
     // 1.2 新增或更新类别
