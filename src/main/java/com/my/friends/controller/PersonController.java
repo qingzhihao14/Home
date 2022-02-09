@@ -9,6 +9,9 @@ import com.my.friends.service.PersonService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
 import com.my.friends.utils.SHA1;
+import com.my.friends.utils.pay.JsCodeSession;
+import com.my.friends.utils.pay.SNSUserInfo;
+import com.my.friends.utils.pay.WeiXinUtil;
 import com.mysql.jdbc.StringUtils;
 import io.swagger.annotations.*;
 import org.apache.commons.logging.LogFactory;
@@ -25,10 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/home")
@@ -102,15 +102,6 @@ public class PersonController {
 //        if(StringUtils.isNullOrEmpty(parent)){
 //            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
 //        }
-        log.info("开始执行！");
-        log.info("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
-        String s = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
-        HttpSession session = request.getSession();
-        //以秒为单位，即在没有活动30分钟后，session将失效
-        session.setMaxInactiveInterval(30*60);
-        session.setAttribute(s, "微信公众号：骄傲的程序员");
-        mysession = s;
-        log.info("设置Session成功{key="+s+",value=微信公众号：骄傲的程序员}");
         return personService.selectLbXm(parent);
     }
 
@@ -121,10 +112,6 @@ public class PersonController {
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLb")
     public Result getLb(HttpServletRequest request){
-        HttpSession session = request.getSession();
-        log.info("开始获取到的Session="+mysession);
-        String data = (String) session.getAttribute(mysession);
-        log.info("获取到的Session的Key="+data);
         return personService.getLb();
     }
     // 1.2 新增或更新类别
@@ -217,25 +204,72 @@ public class PersonController {
      * 根据【微信号】新增或获取账号信息
      * */
     // 1.1 登录
-    @ApiOperation(value = "根据【微信号】新增或获取账号信息"
-//                ,produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE
-                )
-    @GetMapping(path = "/login"
-//            ,consumes = "application/json", produces = "application/json"
-            )
+    @ApiOperation(value = "根据【微信code】新增或获取账号信息")
+    @GetMapping(path = "/login")
     @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query",name = "username",value ="微信号",dataType ="String")})
-    public Result login(
-            @ApiIgnore @RequestParam(required = false) Map<String,String> remap){
-        String wechat = remap.get("wechat");
-        String password = remap.get("password");
-        if(StringUtils.isNullOrEmpty(wechat)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"微信号为空");
+            @ApiImplicitParam(paramType = "query",name = "code",value ="微信code",dataType ="String")})
+    public Result login(@ApiIgnore @RequestParam(required = false) Map<String,String> remap,
+                        HttpServletRequest request){
+//        String wechat = remap.get("wechat");
+//        String password = remap.get("password");
+//        if(StringUtils.isNullOrEmpty(wechat)){
+//            return Result.error(CodeMsg.PARAMETER_ISNULL,"微信号为空");
+//        }
+//        User user = new User();
+//        user.setWechat(wechat);
+//        return personService.login(user);
+
+
+        String code = remap.get("code");
+        if(StringUtils.isNullOrEmpty(code)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
-        User user = new User();
-        user.setWechat(wechat);
-        return personService.login(user);
+        JsCodeSession jsCodeSession = WeiXinUtil.getSessionkeyAndOpenid(code);
+        log.info("通过appid+appSecret+code获取session_key+openid =>"+jsCodeSession.toString());
+
+        log.info("开始执行！");
+        log.info("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
+        String personalKey = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put(personalKey,jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+
+        HttpSession session = request.getSession();
+        //以秒为单位，即在没有活动30分钟后，session将失效
+        session.setMaxInactiveInterval(30*60);
+        session.setAttribute(personalKey, jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+        mysession = personalKey;
+        log.info("设置Session成功{key="+personalKey+",value="+jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+
+        return Result.success(map);
     }
+    /*
+     * 1.1.1.用户登录之后
+     * 根据【微信code和session】新增或获取账号信息
+     * */
+    @ApiOperation(value = "根据【微信code和session】获取微信号相关信息")
+    @GetMapping(path = "/getDetailes")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query",name = "code",value ="微信code",dataType ="String")})
+    public Result getDetailes(@ApiIgnore @RequestParam(required = false) Map<String,String> remap,
+                        HttpServletRequest request){
+        String access_token = remap.get("ACCESS_TOKEN");
+        HttpSession session = request.getSession();
+        String sessionAttribute = (String)session.getAttribute(mysession);
+        if(!StringUtils.isNullOrEmpty(sessionAttribute)){
+            String[] strings = sessionAttribute.split("_");
+            if(strings.length<=0){
+                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+            }
+            SNSUserInfo snsUserInfo = WeiXinUtil.getSNSUserInfo(strings[0], strings[1]);
+            return Result.success(snsUserInfo);
+        }else{
+            return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+        }
+    }
+
+
+
     // 1.2 查询订单
     @ApiOperation(value = "查询订单")
     @GetMapping("/getOrder")
