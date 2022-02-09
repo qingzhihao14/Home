@@ -2,6 +2,7 @@ package com.my.friends.utils.pay;
 
 import com.my.friends.controller.PersonController;
 import com.my.friends.service.CommandService;
+import com.mysql.jdbc.StringUtils;
 import net.sf.json.JSONObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +29,7 @@ public class WeiXinUtil {
     /*
     * Q微信小程序获取Openid和Sessionkey
     * */
-    public static JsCodeSession getSessionkeyAndOpenid(String code) {
+    public static JSONObject getSessionkeyAndOpenid(String code) {
         String requestUrl = session_key_openid
                 .replace("APPID",appid)
                 .replace("APPSECRET",appSecret)
@@ -38,11 +39,9 @@ public class WeiXinUtil {
 
         //将得到的json对象的属性值，存到accesstoken中
         log.info("通过appid+appSecret+code获取session_key+openid =>"+jsonObject.toString());
-        JsCodeSession jscodesession = new JsCodeSession();
+
         System.out.println("==" + jsonObject.toString());
-        jscodesession.setSession_key(jsonObject.getString("session_key"));
-        jscodesession.setOpenId(jsonObject.getString("openid"));
-        return jscodesession;
+        return jsonObject;
     }
 
     public static AccessToken getAccessToken(String appid, String appSecret) {

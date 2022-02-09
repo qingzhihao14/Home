@@ -14,6 +14,7 @@ import com.my.friends.utils.pay.SNSUserInfo;
 import com.my.friends.utils.pay.WeiXinUtil;
 import com.mysql.jdbc.StringUtils;
 import io.swagger.annotations.*;
+import net.sf.json.JSONObject;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,36 +225,40 @@ public class PersonController {
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
-        JsCodeSession jsCodeSession = WeiXinUtil.getSessionkeyAndOpenid(code);
-        log.info("通过appid+appSecret+code获取session_key+openid =>"+jsCodeSession.toString());
+        JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
+        JsCodeSession jsCodeSession =new JsCodeSession();
+        if(StringUtils.isNullOrEmpty(jsonObject.getString("errcode"))){
+            jsCodeSession.setSession_key(jsonObject.getString("session_key"));
+            jsCodeSession.setOpenId(jsonObject.getString("openid"));
 
-        log.info("开始执行！");
-        log.info("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
-        String personalKey = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
+            log.info("通过appid+appSecret+code获取session_key+openid =>"+jsCodeSession.toString());
 
-        HashMap<String, String> map = new HashMap<>();
-        map.put(personalKey,jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+            log.info("开始执行！");
+            log.info("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
+            String personalKey = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
 
-        HttpSession session = request.getSession();
-        //以秒为单位，即在没有活动30分钟后，session将失效
-        session.setMaxInactiveInterval(30*60);
-        session.setAttribute(personalKey, jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
-        mysession = personalKey;
-        log.info("设置Session成功{key="+personalKey+",value="+jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+            HashMap<String, String> map = new HashMap<>();
+            map.put(personalKey,jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
 
-        return Result.success(map);
+            HttpSession session = request.getSession();
+            //以秒为单位，即在没有活动30分钟后，session将失效
+            session.setMaxInactiveInterval(30*60);
+            session.setAttribute(personalKey, jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+            mysession = personalKey;
+            log.info("设置Session成功{key="+personalKey+",value="+jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+
+            return Result.success(map);
+        }else{
+            return Result.success(jsonObject);
+        }
     }
     /*
      * 1.1.1.用户登录之后
      * 根据【微信code和session】新增或获取账号信息
      * */
-    @ApiOperation(value = "根据【微信code和session】获取微信号相关信息")
+    @ApiOperation(value = "根据【session】获取微信号相关信息")
     @GetMapping(path = "/getDetailes")
-    @ApiImplicitParams({
-            @ApiImplicitParam(paramType = "query",name = "code",value ="微信code",dataType ="String")})
-    public Result getDetailes(@ApiIgnore @RequestParam(required = false) Map<String,String> remap,
-                        HttpServletRequest request){
-        String access_token = remap.get("ACCESS_TOKEN");
+    public Result getDetailes(HttpServletRequest request){
         HttpSession session = request.getSession();
         String sessionAttribute = (String)session.getAttribute(mysession);
         if(!StringUtils.isNullOrEmpty(sessionAttribute)){
