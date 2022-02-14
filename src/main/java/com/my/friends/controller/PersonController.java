@@ -1,6 +1,7 @@
 package com.my.friends.controller;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.log.Log;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
@@ -14,12 +15,14 @@ import com.my.friends.utils.pay.SNSUserInfo;
 import com.my.friends.utils.pay.WeiXinUtil;
 import com.mysql.jdbc.StringUtils;
 import io.swagger.annotations.*;
+import io.swagger.models.auth.In;
 import net.sf.json.JSONObject;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.http.MediaType;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -40,7 +43,6 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
-    private String mysession;
 
     private static final
     org.apache.commons.logging.Log log= LogFactory.getLog(PersonController.class);
@@ -227,7 +229,8 @@ public class PersonController {
         }
         JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
         JsCodeSession jsCodeSession =new JsCodeSession();
-        if(StringUtils.isNullOrEmpty(jsonObject.getString("errcode"))){
+
+        if(!jsonObject.containsKey("errcode")){
             jsCodeSession.setSession_key(jsonObject.getString("session_key"));
             jsCodeSession.setOpenId(jsonObject.getString("openid"));
 
@@ -238,40 +241,114 @@ public class PersonController {
             String personalKey = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
 
             HashMap<String, String> map = new HashMap<>();
-            map.put(personalKey,jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
-
-            HttpSession session = request.getSession();
+            map.put("cookie",personalKey);
+            map.put("openid",jsCodeSession.getOpenId());
+            map.put("sessionkey",jsCodeSession.getSession_key());
+            HttpSession session = request.getSession(true);
             //以秒为单位，即在没有活动30分钟后，session将失效
             session.setMaxInactiveInterval(30*60);
-            session.setAttribute(personalKey, jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
-            mysession = personalKey;
-            log.info("设置Session成功{key="+personalKey+",value="+jsCodeSession.getOpenId()+"_"+jsCodeSession.getSession_key());
+            session.setAttribute(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
+            log.info("设置Session成功{key="+personalKey+",value="+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
 
             return Result.success(map);
         }else{
             return Result.success(jsonObject);
         }
     }
-    /*
-     * 1.1.1.用户登录之后
-     * 根据【微信code和session】新增或获取账号信息
-     * */
-    @ApiOperation(value = "根据【session】获取微信号相关信息")
-    @GetMapping(path = "/getDetailes")
-    public Result getDetailes(HttpServletRequest request){
-        HttpSession session = request.getSession();
-        String sessionAttribute = (String)session.getAttribute(mysession);
-        if(!StringUtils.isNullOrEmpty(sessionAttribute)){
-            String[] strings = sessionAttribute.split("_");
+
+    // 1.2 保存微信登录信息
+    @ApiOperation(value = "保存微信登录信息")
+    @RequestMapping(value = "/saveLoginInfo", method = {RequestMethod.POST})
+    public Result saveLoginInfo(@RequestBody Map<String,String> remap,HttpServletRequest request){
+        String token = request.getHeader("token");
+        String openId = "";
+        if(!StringUtils.isNullOrEmpty(token)){
+            HttpSession session = request.getSession();
+            String cookiez = (String)session.getAttribute(token);
+            log.info("getDetailes_cookiez="+cookiez);
+            if(StringUtils.isNullOrEmpty(cookiez)){
+                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"请先登录");
+            }
+            String[] strings = cookiez.split("，");
             if(strings.length<=0){
                 return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
             }
-            SNSUserInfo snsUserInfo = WeiXinUtil.getSNSUserInfo(strings[0], strings[1]);
-            return Result.success(snsUserInfo);
-        }else{
+            openId = strings[1];
+        }
+        if("".equals(openId)){
             return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
         }
+        String nickName = remap.get("nickName");
+        Integer gender = Integer.parseInt(remap.get("gender"));
+        String avatarUrl = remap.get("avatarUrl");
+        if(StringUtils.isNullOrEmpty(nickName)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"nickName为空");
+        }
+        if(ObjectUtils.isEmpty(gender)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"gender为空");
+        }
+        if(StringUtils.isNullOrEmpty(avatarUrl)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"avatarUrl为空");
+        }
+        User user = new User();
+        user.setCode(openId);
+        user.setName(nickName);
+        user.setSex(gender);
+        user.setNote(avatarUrl);
+        return personService.login(user);
     }
+
+    /*
+     * 1.类别
+     * */
+    // 1.1 查询类别
+    @ApiOperation(value = "获取所有微信登录信息")
+    @GetMapping("/getLoginInfo")
+    public Result getLoginInfo(HttpServletRequest request){
+        return personService.getLoginInfo();
+    }
+    /*
+     * 1.1.1.用户登录之后 --=》废弃
+     * 根据【微信code和session】新增或获取账号信息
+     * */
+//    @ApiOperation(value = "根据【session】获取微信号相关信息")
+//    @GetMapping(path = "/getDetailes")
+//    public Result getDetailes(HttpServletRequest request){
+//        String cookie = request.getHeader("cookie");
+//        String token = request.getHeader("token");
+//        log.info("getDetailes_cookie="+cookie);
+//        log.info("getDetailes_token="+token);
+//        Enumeration headerNames = request.getHeaderNames();
+//        while (headerNames.hasMoreElements()) {
+//            String key = (String) headerNames.nextElement();
+//            String value = request.getHeader(key);
+//            log.info("key="+key+" -- value="+value);
+//            if("token".equals(key)){
+//                token = value;
+//                log.info("key="+key+" -- value="+value);
+//            }
+//        }
+//        log.info("getDetailes_cookie="+cookie);
+//        log.info("getDetailes_token="+token);
+//        if(!StringUtils.isNullOrEmpty(token)){
+//            HttpSession session = request.getSession();
+//            log.info("getDetailes_session="+session);
+//            String cookiez = (String)session.getAttribute(token);
+//            log.info("getDetailes_cookiez="+cookiez);
+//            if(StringUtils.isNullOrEmpty(cookiez)){
+//                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"请先登录");
+//            }
+//            String[] strings = cookiez.split("，");
+//            if(strings.length<=0){
+//                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Cookie无效");
+//            }
+//            SNSUserInfo snsUserInfo = WeiXinUtil.getSNSUserInfo(strings[0], strings[1]);
+//            log.info("getDetailes_snsUserInfo="+snsUserInfo.toString());
+//            return Result.success(snsUserInfo);
+//        }else{
+//            return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Cookie无效");
+//        }
+//    }
 
 
 

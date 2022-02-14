@@ -3,6 +3,7 @@ package com.my.friends.service.impl;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.unit.DataUnit;
 import cn.hutool.core.util.IdUtil;
+import com.my.friends.controller.PersonController;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
 import com.my.friends.mapper.*;
@@ -15,6 +16,8 @@ import com.mysql.jdbc.StringUtils;
 import com.sun.org.apache.regexp.internal.RE;
 import io.jsonwebtoken.Claims;
 import org.apache.catalina.mbeans.UserMBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.expression.CachedExpressionEvaluator;
@@ -53,6 +56,8 @@ public class PersonServiceImpl implements PersonService {
     private AdminMapper adminMapper;
     @Value("${file.basepath}")
     private String baseAddress;
+    private static final Log log= LogFactory.getLog(PersonController.class);
+
     /**
      * 配置jwt
      *
@@ -296,27 +301,56 @@ public class PersonServiceImpl implements PersonService {
     // 1.1 新增或更新项目
     @Override
     public Result login(User user) {
-        String wechat = user.getWechat();
+        log.info("微信登录"+user);
+        String code = user.getCode();
         UserExample example = new UserExample();
-        example.createCriteria().andWechatEqualTo(wechat);
-        List<User> users = userMapper.selectByExample(example);
+        example.createCriteria().andCodeEqualTo(code);
+        ArrayList<User> users = userMapper.selectByExample(example);
+        int count = 0;
+        HashMap<String, String> map = new HashMap<>();
         if (users.size() > 0) {
             // 再次登录的用户
-            HashMap<String, String> map = new HashMap<>();
-            map.put("id", users.get(0).getId());
-        }
-        // 第一次登录，添加用户
-        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-        user.setId(uuid);
-        user.setCode(user.getWechat());
-        int count = userMapper.insert(user);
-        if (count > 0) {
-            return Result.success();
-        } else {
-            return Result.error(CodeMsg.OP_FAILED, "登录失败");
+            log.info("再次登录，更新微信用户");
+            User userz = users.get(0);
+            userz.setCode(user.getCode());
+            userz.setSex(user.getSex());
+            userz.setNote(user.getNote());
+            userz.setName(user.getName());
+            // 编辑
+            count = userMapper.updateByPrimaryKey(userz);
+            if(count>0){
+                map.put("openId",user.getCode());
+                return Result.success(map);
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
+        }else{
+            // 第一次登录，添加用户
+            log.info("第一次登录，添加微信用户");
+            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            user.setId(uuid);
+            count = userMapper.insert(user);
+            if (count > 0) {
+                map.put("openId",user.getCode());
+                return Result.success(map);
+            } else {
+                return Result.error(CodeMsg.OP_FAILED, "登录失败");
+            }
         }
     }
 
+    // 1.1查询
+    @Override
+    public Result getLoginInfo() {
+        UserExample example = new UserExample();
+        example.createCriteria().andIdIsNotNull();
+        ArrayList<User> list = userMapper.selectByExample(example);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无微信用户信息");
+        }
+    }
     @Override
     public Result getOrder(String usercode) {
         OrderExample example = new OrderExample();

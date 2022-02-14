@@ -59,7 +59,8 @@ public interface PersonService {
     Result getOrder(String usercode);
     //查询个人订单信息
     Result getPictures(String orderno);
-
+    //查询
+    Result getLoginInfo();
 
     /*
      * 5.地址查询

@@ -94,14 +94,30 @@ public class WeiXinUtil {
         SNSUserInfo snsuserinfo = new SNSUserInfo();
         //通过网页授权获取用户信息
         JSONObject jsonObject = CommonUtil.httpsRequest(requestUrl, EnumMethod.GET.name(), null);
+        String jsonObjects = jsonObject.toString();
+        log.info("jsonObjects==="+jsonObjects);
+        if(jsonObject.containsKey("openid")){
+            snsuserinfo.setOpenId(jsonObject.getString("openid"));
+        }
+        if(jsonObject.containsKey("nickname")){
+            snsuserinfo.setNickname(jsonObject.getString("nickname"));
+        }
+        if(jsonObject.containsKey("sex")){
+            snsuserinfo.setSex(jsonObject.getInt("sex"));
+        }
+        if(jsonObject.containsKey("country")){
+            snsuserinfo.setCountry(jsonObject.getString("country"));
+        }
+        if(jsonObject.containsKey("province")){
+            snsuserinfo.setProvince(jsonObject.getString("province"));
+        }
+        if(jsonObject.containsKey("city")){
+            snsuserinfo.setCity(jsonObject.getString("city"));
+        }
+        if(jsonObject.containsKey("headimgurl")){
+            snsuserinfo.setHeadImgUrl(jsonObject.getString("headimgurl"));
+        }
 
-        snsuserinfo.setOpenId(jsonObject.getString("openid"));
-        snsuserinfo.setNickname(jsonObject.getString("nickname"));
-        snsuserinfo.setSex(jsonObject.getInt("sex"));
-        snsuserinfo.setCountry(jsonObject.getString("country"));
-        snsuserinfo.setProvince(jsonObject.getString("province"));
-        snsuserinfo.setCity(jsonObject.getString("city"));
-        snsuserinfo.setHeadImgUrl(jsonObject.getString("headimgurl"));
         //snsuserinfo.setPrivilegeList(JSONArray._fromArray(jsonObject.getString("privilege"),String.class));
         return snsuserinfo;
     }

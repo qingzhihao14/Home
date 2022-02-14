@@ -8,10 +8,24 @@ import java.util.List;
  *
  */
 public class SNSUserInfo {
-	
+
+	@Override
+	public String toString() {
+		return "SNSUserInfo{" +
+				"openId='" + openId + '\'' +
+				", nickname='" + nickname + '\'' +
+				", sex=" + sex +
+				", country='" + country + '\'' +
+				", province='" + province + '\'' +
+				", city='" + city + '\'' +
+				", headImgUrl='" + headImgUrl + '\'' +
+				", privilegeList=" + privilegeList +
+				'}';
+	}
+
 	//用户标识
 	private String openId;
-	
+
 	//用户昵称
 	private String nickname;
 	

@@ -2,6 +2,8 @@ package com.my.friends.mapper;
 
 import com.my.friends.dao.User;
 import com.my.friends.dao.UserExample;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,7 +18,7 @@ public interface UserMapper {
 
     int insertSelective(User record);
 
-    List<User> selectByExample(UserExample example);
+    ArrayList<User> selectByExample(UserExample example);
 
     User selectByPrimaryKey(String id);
 
