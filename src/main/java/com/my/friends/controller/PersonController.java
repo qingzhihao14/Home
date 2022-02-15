@@ -21,9 +21,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -32,12 +35,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Timestamp;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/home")
 @Api(description = "信息管理", hidden=true)
 public class PersonController {
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     @Autowired
     private CommandService commandService;
 
@@ -99,12 +108,16 @@ public class PersonController {
      * */
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLbXms")
+    @CrossOrigin(origins="http://127.0.0.1:8521",allowCredentials = "true")
     public Result getLbXms(HttpServletRequest request,
                            @ApiParam(value = "类别号(传空查询所有)",required = false,defaultValue = "LB1")
                            @RequestParam(required = false) String parent){
 //        if(StringUtils.isNullOrEmpty(parent)){
 //            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
 //        }
+
+        String value = redisTemplate.opsForValue().get("AAA");
+        log.info("Session设置成功{key=AAA,value="+value);
         return personService.selectLbXm(parent);
     }
 
@@ -114,14 +127,23 @@ public class PersonController {
     // 1.1 查询类别
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLb")
+    @CrossOrigin(origins="http://127.0.0.1:8521",allowCredentials = "true")
     public Result getLb(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        //以秒为单位，即在没有活动30分钟后，session将失效
+//        session.setMaxInactiveInterval(30*60);
+        long l = System.currentTimeMillis();
+        session.setAttribute("personalKey", l);
+        log.info("Session设置成功{key=personalKey,value="+session.getAttribute("personalKey"));
+        redisTemplate.opsForValue().set("AAA", "ttttttttttttttest", 7200, TimeUnit.SECONDS);
         return personService.getLb();
     }
     // 1.2 新增或更新类别
     @ApiOperation(value = "新增或更新类别信息")
 //    @PostMapping("/insertOrUpdateLb")
     @RequestMapping(value = "/insertOrUpdateLb", method = {RequestMethod.POST})
-    public Result insertOrUpdateLb(@RequestBody Map<String,String> remap){
+    public Result insertOrUpdateLb(@RequestBody Map<String,String> remap,
+                                   HttpServletRequest request){
         String id = remap.get("id");
         if(StringUtils.isNullOrEmpty(id)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
@@ -156,11 +178,11 @@ public class PersonController {
         lbItem.setFwxz(remap.get("fwxz"));
         lbItem.setParent(remap.get("parent"));
         String price = remap.get("price");
-        if(StringUtils.isNullOrEmpty(price)){
+        if(!StringUtils.isNullOrEmpty(price)){
             lbItem.setPrice(Integer.parseInt(price));
         }
         String sold = remap.get("sold");
-        if(StringUtils.isNullOrEmpty(sold)){
+        if(!StringUtils.isNullOrEmpty(sold)){
             lbItem.setSold(Integer.parseInt(sold));
         }
         lbItem.setUnit(remap.get("unit"));
@@ -244,12 +266,13 @@ public class PersonController {
             map.put("cookie",personalKey);
             map.put("openid",jsCodeSession.getOpenId());
             map.put("sessionkey",jsCodeSession.getSession_key());
+            log.info("设置Session{key="+personalKey+",value="+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
             HttpSession session = request.getSession(true);
             //以秒为单位，即在没有活动30分钟后，session将失效
             session.setMaxInactiveInterval(30*60);
             session.setAttribute(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
-            log.info("设置Session成功{key="+personalKey+",value="+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
-
+            log.info("Session设置成功{key="+personalKey+",value="+session.getAttribute(personalKey));
+            redisTemplate.opsForValue().set(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
             return Result.success(map);
         }else{
             return Result.success(jsonObject);
@@ -260,22 +283,25 @@ public class PersonController {
     @ApiOperation(value = "保存微信登录信息")
     @RequestMapping(value = "/saveLoginInfo", method = {RequestMethod.POST})
     public Result saveLoginInfo(@RequestBody Map<String,String> remap,HttpServletRequest request){
+        String openid = "";
         String token = request.getHeader("token");
-        String openId = "";
+        log.info("saveLoginInfo获取header_token="+token);
         if(!StringUtils.isNullOrEmpty(token)){
-            HttpSession session = request.getSession();
-            String cookiez = (String)session.getAttribute(token);
-            log.info("getDetailes_cookiez="+cookiez);
-            if(StringUtils.isNullOrEmpty(cookiez)){
-                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"请先登录");
-            }
-            String[] strings = cookiez.split("，");
-            if(strings.length<=0){
+            String cookiez = redisTemplate.opsForValue().get(token);
+            log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
+            if(!StringUtils.isNullOrEmpty(cookiez)){
+                if(StringUtils.isNullOrEmpty(cookiez)){
+                    return Result.error(CodeMsg.SESSION_NOT_EXSIST,"请先登录");
+                }
+                String[] strings = cookiez.split("，");
+                if(strings.length<=0){
+                    return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+                }
+                openid = strings[1];
+            }else{
                 return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
             }
-            openId = strings[1];
-        }
-        if("".equals(openId)){
+        }else{
             return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
         }
         String nickName = remap.get("nickName");
@@ -291,7 +317,7 @@ public class PersonController {
             return Result.error(CodeMsg.PARAMETER_ISNULL,"avatarUrl为空");
         }
         User user = new User();
-        user.setCode(openId);
+        user.setCode(openid);
         user.setName(nickName);
         user.setSex(gender);
         user.setNote(avatarUrl);
