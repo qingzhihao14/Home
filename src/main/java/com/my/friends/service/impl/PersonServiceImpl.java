@@ -246,7 +246,45 @@ public class PersonServiceImpl implements PersonService {
             }
         }
     }
+    @Override
+    public Result insertOrUpdateLbItemPic (String id, MultipartFile[] files){
 
+        String original_name = files[0].getOriginalFilename();
+        String file_name = "home_" + IdUtil.simpleUUID().substring(0, 15) + '.' + FileUtil.getSuffix(original_name);
+        String path = (File.separator + file_name).replaceAll("\\\\", "/");
+        String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
+        LbItem lbItem = new LbItem();
+        lbItem.setId(id);
+        lbItem.setPicName(file_name);
+        lbItem.setPicPath(path);
+        lbItem.setPicType(FileUtil.getSuffix(original_name));
+        try {
+            // 创建本地文件存放 文件夹 路径实例
+            File dest = new File(baseAddress);
+            // 判断本地 文件夹 不存在就创建
+            if (!dest.exists()) {
+                dest.mkdirs();
+            }
+            // 创建文件实例
+            File uploadFile = FileUtil.file(newfilePath);
+            // 如果文件在本地存在就删除
+            if (uploadFile.exists()) {
+                uploadFile.delete();
+            }
+            files[0].transferTo(uploadFile);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
+            return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
+        }
+        int count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
+        if(count>0){
+            return Result.success(newfilePath);
+        }else{
+            return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
+        }
+    }
     /*
      *
      * 下单

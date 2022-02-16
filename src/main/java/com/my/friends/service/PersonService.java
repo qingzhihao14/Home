@@ -4,6 +4,8 @@ import com.my.friends.dao.*;
 import com.my.friends.utils.Result;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 
 public interface PersonService {
 
@@ -33,7 +35,7 @@ public interface PersonService {
      * 2.项目
      * */
     Result insertOrUpdateItem(LbItem lbItem);
-
+    Result insertOrUpdateLbItemPic(String id, MultipartFile[] files);
     /*
     *
     * 3.下单

@@ -204,6 +204,24 @@ public class PersonController {
     }
 
 
+    // 1.1 新增或更新项目
+    @ApiOperation(value = "上传项目图片")
+    @RequestMapping(value = "/insertOrUpdateLbItemPic", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result insertOrUpdateLbItemPic(
+//            @RequestBody Map<String,String> remap, //不行
+            @RequestParam Map<String,String> remap,
+            @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
+            HttpServletRequest request){
+        String id = remap.get("id");
+        if(StringUtils.isNullOrEmpty(id)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"项目号为空");
+        }
+        if(files.length == 0){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"无图片");
+        }
+        return personService.insertOrUpdateLbItemPic(id,files);
+    }
+
     /*
      *
      * 3.下单
