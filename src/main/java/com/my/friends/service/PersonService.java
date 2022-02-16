@@ -1,20 +1,20 @@
 package com.my.friends.service;
 
 import com.my.friends.dao.*;
-import com.my.friends.dao.extend.LbXm;
 import com.my.friends.utils.Result;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public interface PersonService {
+
     // 获取自己的信息
     Person getMyInfo(String WeChat);
 
     // 获取一个人
     Person getOnePerson(String WeChat);
 
+    // 操作日志
+    void insertLog(Logss log);
 
     /*
     * 1.类别
@@ -23,6 +23,8 @@ public interface PersonService {
     //查询
     Result getLb();
     Result insertOrUpdateLb(Lb lb);
+    //查询
+    Result getXm(String code);
     //查询
     Result selectLbXm(String parent);
 
@@ -53,14 +55,14 @@ public interface PersonService {
      * 4.用户信息
      * */
     // 新增或更新项目
-    Result login(User user);
+    Result login(User user,String userName,String detailInfo,String telNumber);
 
     //查询个人订单信息
     Result getOrder(String usercode);
     //查询个人订单信息
     Result getPictures(String orderno);
     //查询
-    Result getLoginInfo();
+    Result getLoginInfo(String code,String flag);
 
     /*
      * 5.地址查询

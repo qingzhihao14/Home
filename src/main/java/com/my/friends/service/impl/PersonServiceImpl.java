@@ -54,6 +54,8 @@ public class PersonServiceImpl implements PersonService {
     private LbXmMapper lbXmMapper;
     @Resource
     private AdminMapper adminMapper;
+    @Resource
+    private LogssMapper LogssMapper;
     @Value("${file.basepath}")
     private String baseAddress;
     private static final Log log= LogFactory.getLog(PersonController.class);
@@ -96,6 +98,16 @@ public class PersonServiceImpl implements PersonService {
         System.out.println("随机获取一个人："+person);
         return person;
     }
+
+    @Override
+    public void insertLog(Logss logss) {
+        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        logss.setId(uuid);
+        logss.setCreateTime(new Date());
+        LogssMapper.insert(logss);
+    }
+
+
     //============================================================================
     /*
     * 0.查询类别、项目
@@ -124,6 +136,29 @@ public class PersonServiceImpl implements PersonService {
             return Result.success(list);
         }else{
             return Result.error(CodeMsg.NOT_FIND_DATA,"无类别数据，请添加");
+        }
+    }
+    // 1.1查询
+    @Override
+    public Result getXm(String code) {
+        LbItemExample example = new LbItemExample();
+        if(StringUtils.isNullOrEmpty(code)){
+            example.setOrderByClause(" sold desc ");
+            example.createCriteria().andIdIsNotNull();
+            ArrayList<LbItem> list = lbItemMapper.selectByExample(example);
+            if(list.size()>0){
+                return Result.success(list);
+            }else{
+                return Result.error(CodeMsg.NOT_FIND_DATA,"无项目数据，请添加");
+            }
+        }else{
+            example.createCriteria().andCodeEqualTo(code);
+            ArrayList<LbItem> list = lbItemMapper.selectByExample(example);
+            if(list.size()>0){
+                return Result.success(list.get(0));
+            }else{
+                return Result.error(CodeMsg.NOT_FIND_DATA,"无项目数据，请添加");
+            }
         }
     }
     //1.2新增
@@ -296,59 +331,106 @@ public class PersonServiceImpl implements PersonService {
     }
 
     /*
-     * 4.用户信息
+     * 4.保存用户信息
      * */
     // 1.1 新增或更新项目
     @Override
-    public Result login(User user) {
+    public Result login(User user,String userName,String detailInfo,String telNumber) {
         log.info("微信登录"+user);
-        String code = user.getCode();
-        UserExample example = new UserExample();
-        example.createCriteria().andCodeEqualTo(code);
-        ArrayList<User> users = userMapper.selectByExample(example);
-        int count = 0;
-        HashMap<String, String> map = new HashMap<>();
-        if (users.size() > 0) {
-            // 再次登录的用户
-            log.info("再次登录，更新微信用户");
-            User userz = users.get(0);
-            userz.setCode(user.getCode());
-            userz.setSex(user.getSex());
-            userz.setNote(user.getNote());
-            userz.setName(user.getName());
-            // 编辑
-            count = userMapper.updateByPrimaryKey(userz);
-            if(count>0){
-                map.put("openId",user.getCode());
-                return Result.success(map);
+        // 修改地址
+        if(StringUtils.isNullOrEmpty(user.getName())){
+            // 根据usercode查询是否存在 不存在新增 存在按usercode更新地址信息
+            AddressExample exampleAdd = new AddressExample();
+            exampleAdd.createCriteria().andCodeEqualTo(user.getCode());
+            List<Address> addresses = addressMapper.selectByExample(exampleAdd);
+            if(addresses.size()>0){
+                Address addressz = addresses.get(0);
+                String id = addressz.getId();
+                // 编辑
+                Result result = insertOrUpdateAddress(id, user.getCode(), detailInfo, telNumber, userName);
+                return result;
             }else{
-                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+                Result result = insertOrUpdateAddress("", user.getCode(), detailInfo, telNumber, userName);
+                return result;
             }
         }else{
-            // 第一次登录，添加用户
-            log.info("第一次登录，添加微信用户");
-            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-            user.setId(uuid);
-            count = userMapper.insert(user);
-            if (count > 0) {
-                map.put("openId",user.getCode());
-                return Result.success(map);
-            } else {
-                return Result.error(CodeMsg.OP_FAILED, "登录失败");
+            // 修改基本信息
+            String code = user.getCode();
+            UserExample example = new UserExample();
+            example.createCriteria().andCodeEqualTo(code);
+            ArrayList<User> users = userMapper.selectByExample(example);
+            int count = 0;
+            if (users.size() > 0) {
+                // 再次登录的用户
+                log.info("再次登录，更新微信用户");
+                User userz = users.get(0);
+                userz.setCode(user.getCode());
+                userz.setSex(user.getSex());
+                userz.setNote(user.getNote());
+                userz.setName(user.getName());
+                // 编辑
+                count = userMapper.updateByPrimaryKey(userz);
+                if(count>0){
+                    return Result.success();
+                }else{
+                    return Result.error(CodeMsg.OP_FAILED,"更新失败");
+                }
+            }else{
+                // 第一次登录，添加用户
+                log.info("第一次登录，添加微信用户");
+                String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+                user.setId(uuid);
+                count = userMapper.insert(user);
+                if (count > 0) {
+                    return Result.success();
+                } else {
+                    return Result.error(CodeMsg.OP_FAILED, "登录失败");
+                }
             }
         }
     }
-
     // 1.1查询
     @Override
-    public Result getLoginInfo() {
+    public Result getLoginInfo(String code,String flag) {
         UserExample example = new UserExample();
-        example.createCriteria().andIdIsNotNull();
-        ArrayList<User> list = userMapper.selectByExample(example);
-        if(list.size()>0){
-            return Result.success(list);
+        if (!StringUtils.isNullOrEmpty(code)) {
+            example.createCriteria().andCodeEqualTo(code);
+            ArrayList<User> list = userMapper.selectByExample(example);
+            if(list.size()>0){
+                AddressExample exampleAdd = new AddressExample();
+                exampleAdd.createCriteria().andCodeEqualTo(code);
+                List<Address> addresses = addressMapper.selectByExample(exampleAdd);
+                String userName = "";
+                String detailInfo = "";
+                String telNumber = "";
+                if(addresses.size()>0){
+                    userName = addresses.get(0).getName();
+                    detailInfo = addresses.get(0).getAddress();
+                    telNumber = addresses.get(0).getPhone();
+                }
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("name",list.get(0).getName());
+                map.put("note",list.get(0).getNote());
+                map.put("sex",list.get(0).getSex());
+                map.put("userName",userName);
+                map.put("detailInfo",detailInfo);
+                map.put("telNumber",telNumber);
+                return Result.success(map);
+            }else{
+                return Result.error(CodeMsg.NOT_FIND_DATA,"无微信用户信息");
+            }
         }else{
-            return Result.error(CodeMsg.NOT_FIND_DATA,"无微信用户信息");
+            if("all".equals(flag)){
+                example.createCriteria().andIdIsNotNull();
+                ArrayList<User> list = userMapper.selectByExample(example);
+                if(list.size()>0){
+                    return Result.success(list);
+                }else{
+                    return Result.error(CodeMsg.NOT_FIND_DATA,"无微信用户信息");
+                }
+            }else{
+                return Result.error(CodeMsg.PARAMETER_ISNULL,"登陆失效，请重新登陆");
+            }
         }
     }
     @Override

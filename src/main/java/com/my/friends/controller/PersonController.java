@@ -2,11 +2,14 @@ package com.my.friends.controller;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.extra.ssh.JschUtil;
+import cn.hutool.json.JSONUtil;
 import cn.hutool.log.Log;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
 import com.my.friends.service.CommandService;
 import com.my.friends.service.PersonService;
+import com.my.friends.service.impl.PersonServiceImpl;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
 import com.my.friends.utils.SHA1;
@@ -56,59 +59,66 @@ public class PersonController {
     private static final
     org.apache.commons.logging.Log log= LogFactory.getLog(PersonController.class);
 
-    @GetMapping("/init")
-    public String init(HttpServletRequest req, HttpServletResponse resp) throws NoSuchAlgorithmException, IOException
-    {
-        String signature = req.getParameter("signature");
-        String timestamp = req.getParameter("timestamp");
-        String nonce = req.getParameter("nonce");
-        String echostr = req.getParameter("echostr");
-        String[] arr = {"zhbcm", timestamp, nonce};
-        Arrays.sort(arr);//排序
-        StringBuilder builder = new StringBuilder();
-        for (String s : arr)
-        {
-            builder.append(s);//合并
-        }
-        String sha1 = SHA1.sha1(builder.toString());//加密
-        if (sha1.equals(signature))
-        {
-//            PrintWriter pw = resp.getWriter();
-//            pw.println(echostr);
-//            pw.flush();
-//            pw.close();
-            log.info("接入成功！");
-            return echostr;
-        } else
-        {
-            log.error("接入失败！");
-            return echostr;
+//    @GetMapping("/init")
+//    public String init(HttpServletRequest req, HttpServletResponse resp) throws NoSuchAlgorithmException, IOException
+//    {
+//        String signature = req.getParameter("signature");
+//        String timestamp = req.getParameter("timestamp");
+//        String nonce = req.getParameter("nonce");
+//        String echostr = req.getParameter("echostr");
+//        String[] arr = {"zhbcm", timestamp, nonce};
+//        Arrays.sort(arr);//排序
+//        StringBuilder builder = new StringBuilder();
+//        for (String s : arr)
+//        {
+//            builder.append(s);//合并
+//        }
+//        String sha1 = SHA1.sha1(builder.toString());//加密
+//        if (sha1.equals(signature))
+//        {
+////            PrintWriter pw = resp.getWriter();
+////            pw.println(echostr);
+////            pw.flush();
+////            pw.close();
+//            log.info("接入成功！");
+//            return echostr;
+//        } else
+//        {
+//            log.error("接入失败！");
+//            return echostr;
+//        }
+//    }
+
+    /*
+    * 获取微信用户openid
+    * */
+    public Result getOpenId(HttpServletRequest request){
+
+        String token = request.getHeader("token");
+        log.info("saveLoginInfo获取header_token="+token);
+        if(!StringUtils.isNullOrEmpty(token)){
+            String cookiez = redisTemplate.opsForValue().get(token);
+            log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
+            if(!StringUtils.isNullOrEmpty(cookiez)){
+                String[] strings = cookiez.split("，");
+                if(strings.length<=0){
+                    return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+                }
+                String openid = strings[1];
+                return Result.success(openid);
+            }else{
+                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+            }
+        }else{
+            return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
         }
     }
-//
-//    @ApiOperation(value = "获取用户信息")
-//    @GetMapping("/getMyInfo")
-//    public Person getMyInfo(
-//            @ApiParam(value = "微信号",required = true,defaultValue = "a123") @RequestParam String WeChat
-//    ){
-//        return personService.getMyInfo(WeChat);
-//    }
-//
-//    @ApiOperation(value = "随机获取除本人之外的用户信息")
-//    @GetMapping("/getOnePerson")
-//    public Person getOnePerson(
-//            @ApiParam(value = "微信号",required = true,defaultValue = "a123") @RequestParam String WeChat
-//    ){
-//        return personService.getOnePerson(WeChat);
-//    }
-
-
     /*
      * 0.获取类别、项目信息
      * */
     @ApiOperation(value = "获取类别、项目信息")
+    @ApiOperationSort(1)
     @GetMapping("/getLbXms")
-    @CrossOrigin(origins="http://127.0.0.1:8521",allowCredentials = "true")
     public Result getLbXms(HttpServletRequest request,
                            @ApiParam(value = "类别号(传空查询所有)",required = false,defaultValue = "LB1")
                            @RequestParam(required = false) String parent){
@@ -127,7 +137,6 @@ public class PersonController {
     // 1.1 查询类别
     @ApiOperation(value = "获取类别、项目信息")
     @GetMapping("/getLb")
-    @CrossOrigin(origins="http://127.0.0.1:8521",allowCredentials = "true")
     public Result getLb(HttpServletRequest request){
         HttpSession session = request.getSession();
         //以秒为单位，即在没有活动30分钟后，session将失效
@@ -138,9 +147,15 @@ public class PersonController {
         redisTemplate.opsForValue().set("AAA", "ttttttttttttttest", 7200, TimeUnit.SECONDS);
         return personService.getLb();
     }
+    // 1.1 查询项目
+    @ApiOperation(value = "获取项目信息（热销、精选）")
+    @GetMapping("/getXm")
+    public Result getXm(HttpServletRequest request){
+        String code = request.getParameter("code");
+        return personService.getXm(code);
+    }
     // 1.2 新增或更新类别
     @ApiOperation(value = "新增或更新类别信息")
-//    @PostMapping("/insertOrUpdateLb")
     @RequestMapping(value = "/insertOrUpdateLb", method = {RequestMethod.POST})
     public Result insertOrUpdateLb(@RequestBody Map<String,String> remap,
                                    HttpServletRequest request){
@@ -161,7 +176,6 @@ public class PersonController {
     * */
     // 1.1 新增或更新项目
     @ApiOperation(value = "新增或更新项目信息")
-//    @PostMapping("/insertOrUpdateLbItem")
     @RequestMapping(value = "/insertOrUpdateLbItem", method = {RequestMethod.POST})
     public Result insertOrUpdateItem(@RequestBody Map<String,String> remap){
         String parent = remap.get("parent");
@@ -204,10 +218,9 @@ public class PersonController {
      * note 备注
      * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    @ApiOperation(value = "下单")
+    @ApiOperation(value = "下单【个人】")
     @RequestMapping(value = "/order", method = {RequestMethod.GET})
     public Result order(
-            @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
             @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
             @ApiParam(value = "订单编码",required = false,defaultValue = "")  @RequestParam(required = false) String orderno,
             @ApiParam(value = "支付金额",required = false,defaultValue = "0")  @RequestParam(required = false) Integer pay,
@@ -218,7 +231,37 @@ public class PersonController {
             @ApiParam(value = "服务时间",required = false,defaultValue = "")  @RequestParam(required = false) String servicetime,
             @ApiParam(value = "优惠券",required = false,defaultValue = "")  @RequestParam(required = false) String coupon,
             @ApiParam(value = "备注",required = false,defaultValue = "")  @RequestParam(required = false) String note,
-    @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files){
+    @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
+            HttpServletRequest request){
+        String way = request.getParameter("way");
+        String usercode = "";
+        if(!"all".equals(way)){
+            Result result = getOpenId(request);
+            if(result.getCode() != 0){
+                return result;
+            }
+            usercode = (String) result.getData();
+        }
+        Logss logss = new Logss();
+        logss.setUserId(usercode);
+        logss.setUsername("");
+        logss.setUrlName("下单【个人】");
+        logss.setUrl("/order");
+        HashMap<Object, Object> reqMap = new HashMap<>();
+        reqMap.put("usercode",usercode);
+        reqMap.put("code",code);
+        reqMap.put("orderno",orderno);
+        reqMap.put("pay",pay);
+        reqMap.put("addressid",addressid);
+        reqMap.put("address",address);
+        reqMap.put("phone",phone);
+        reqMap.put("name",name);
+        reqMap.put("servicetime",servicetime);
+        reqMap.put("coupon",coupon);
+        reqMap.put("note",note);
+        reqMap.put("files",files);
+        logss.setParam(JSONUtil.toJsonStr(reqMap));
+        personService.insertLog(logss);
         return personService.order( usercode,  code,  orderno,  pay, addressid,  address, phone, name,  servicetime,  coupon,  note, files);
     }
 
@@ -229,7 +272,7 @@ public class PersonController {
      * 根据【微信号】新增或获取账号信息
      * */
     // 1.1 登录
-    @ApiOperation(value = "根据【微信code】新增或获取账号信息")
+    @ApiOperation(value = "根据【微信code】登录【个人】")
     @GetMapping(path = "/login")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "query",name = "code",value ="微信code",dataType ="String")})
@@ -273,6 +316,16 @@ public class PersonController {
             session.setAttribute(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
             log.info("Session设置成功{key="+personalKey+",value="+session.getAttribute(personalKey));
             redisTemplate.opsForValue().set(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
+
+            Logss logss = new Logss();
+            logss.setUserId(jsCodeSession.getOpenId());
+            logss.setUsername("");
+            logss.setUrlName("根据【微信code】登录【个人】");
+            logss.setUrl("/login");
+            remap.put("code",code);
+            logss.setParam(JSONUtil.toJsonStr(remap));
+            personService.insertLog(logss);
+
             return Result.success(map);
         }else{
             return Result.success(jsonObject);
@@ -280,19 +333,17 @@ public class PersonController {
     }
 
     // 1.2 保存微信登录信息
-    @ApiOperation(value = "保存微信登录信息")
+    @ApiOperation(value = "登录时保存微信登录信息【个人】")
     @RequestMapping(value = "/saveLoginInfo", method = {RequestMethod.POST})
     public Result saveLoginInfo(@RequestBody Map<String,String> remap,HttpServletRequest request){
         String openid = "";
+        User user = new User();
         String token = request.getHeader("token");
         log.info("saveLoginInfo获取header_token="+token);
         if(!StringUtils.isNullOrEmpty(token)){
             String cookiez = redisTemplate.opsForValue().get(token);
             log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
             if(!StringUtils.isNullOrEmpty(cookiez)){
-                if(StringUtils.isNullOrEmpty(cookiez)){
-                    return Result.error(CodeMsg.SESSION_NOT_EXSIST,"请先登录");
-                }
                 String[] strings = cookiez.split("，");
                 if(strings.length<=0){
                     return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
@@ -304,34 +355,60 @@ public class PersonController {
         }else{
             return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
         }
-        String nickName = remap.get("nickName");
-        Integer gender = Integer.parseInt(remap.get("gender"));
-        String avatarUrl = remap.get("avatarUrl");
-        if(StringUtils.isNullOrEmpty(nickName)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"nickName为空");
-        }
-        if(ObjectUtils.isEmpty(gender)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"gender为空");
-        }
-        if(StringUtils.isNullOrEmpty(avatarUrl)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"avatarUrl为空");
-        }
-        User user = new User();
         user.setCode(openid);
-        user.setName(nickName);
-        user.setSex(gender);
-        user.setNote(avatarUrl);
-        return personService.login(user);
+        if(!StringUtils.isNullOrEmpty(remap.get("gender"))){
+            Integer gender = Integer.parseInt(remap.get("gender"));
+            user.setSex(gender);
+        }
+        if(!StringUtils.isNullOrEmpty(remap.get("avatarUrl"))){
+            String avatarUrl = remap.get("avatarUrl");
+            user.setNote(avatarUrl);
+        }
+        String nickName = remap.get("nickName");
+        if(!StringUtils.isNullOrEmpty(remap.get("nickName"))){
+            user.setName(nickName);
+        }
+        String userName = remap.get("userName");
+        String detailInfo = remap.get("detailInfo");
+        String telNumber = remap.get("telNumber");
+
+        Logss logss = new Logss();
+        logss.setUserId(openid);
+        logss.setUsername(nickName);
+        logss.setUrlName("保存微信登录信息【个人】");
+        logss.setUrl("/saveLoginInfo");
+        remap.put("token",token);
+        logss.setParam(JSONUtil.toJsonStr(remap));
+        personService.insertLog(logss);
+
+        return personService.login(user, userName, detailInfo, telNumber);
     }
 
-    /*
-     * 1.类别
-     * */
-    // 1.1 查询类别
-    @ApiOperation(value = "获取所有微信登录信息")
+    // 1.1 查询个人信息
+    @ApiOperation(value = "获取微信登录信息【个人】")
     @GetMapping("/getLoginInfo")
     public Result getLoginInfo(HttpServletRequest request){
-        return personService.getLoginInfo();
+        String way = request.getParameter("way");
+        String code = "";
+        if(!"all".equals(way)){
+            Result result = getOpenId(request);
+            if(result.getCode() != 0){
+                return result;
+            }
+            code = (String) result.getData();
+        }
+
+        Logss logss = new Logss();
+        logss.setUserId(code);
+        logss.setUsername("");
+        logss.setUrlName("获取微信登录信息【个人】");
+        logss.setUrl("/getLoginInfo");
+        HashMap<Object, Object> remap = new HashMap<>();
+        remap.put("way",way);
+        remap.put("code",code);
+        logss.setParam(JSONUtil.toJsonStr(remap));
+        personService.insertLog(logss);
+        return personService.getLoginInfo(code,way);
     }
     /*
      * 1.1.1.用户登录之后 --=》废弃
@@ -379,14 +456,31 @@ public class PersonController {
 
 
     // 1.2 查询订单
-    @ApiOperation(value = "查询订单")
+    @ApiOperation(value = "查询订单【个人】")
     @GetMapping("/getOrder")
     public Result getOrder(
-            @ApiParam(value = "用户代码",required = false,defaultValue = "LB1") @RequestParam(required = false) String usercode){
-        if(StringUtils.isNullOrEmpty(usercode)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
+            HttpServletRequest request){
+        String way = request.getParameter("way");
+        String code = "";
+        if(!"all".equals(way)){
+            Result result = getOpenId(request);
+            if(result.getCode() != 0){
+                return result;
+            }
+            code = (String) result.getData();
         }
-        return personService.getOrder(usercode);
+
+        Logss logss = new Logss();
+        logss.setUserId(code);
+        logss.setUsername("");
+        logss.setUrlName("查询订单【个人】");
+        logss.setUrl("/getLoginInfo");
+        HashMap<Object, Object> remap = new HashMap<>();
+        remap.put("way",way);
+        remap.put("code",code);
+        logss.setParam(JSONUtil.toJsonStr(remap));
+        personService.insertLog(logss);
+        return personService.getOrder(code);
     }
     // 1.3 查询订单-图片
     @ApiOperation(value = "查询订单-图片")
@@ -403,27 +497,50 @@ public class PersonController {
      * 5.地址
      * */
     // 1.1 查询地址
-    @ApiOperation(value = "获取地址信息")
+    @ApiOperation(value = "获取地址信息【个人】")
     @GetMapping("/getAddress")
     public Result getAddress(
-            @ApiParam(value = "用户代码",required = false,defaultValue = "") @RequestParam(required = false) String usercode){
-        if(StringUtils.isNullOrEmpty(usercode)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
+            HttpServletRequest request){
+        String way = request.getParameter("way");
+        String code = "";
+        if(!"all".equals(way)){
+            Result result = getOpenId(request);
+            if(result.getCode() != 0){
+                return result;
+            }
+            code = (String) result.getData();
         }
-        return personService.getAddress(usercode);
+
+        Logss logss = new Logss();
+        logss.setUserId(code);
+        logss.setUsername("");
+        logss.setUrlName("查询订单【个人】");
+        logss.setUrl("/getLoginInfo");
+        HashMap<Object, Object> remap = new HashMap<>();
+        remap.put("way",way);
+        remap.put("code",code);
+        logss.setParam(JSONUtil.toJsonStr(remap));
+        personService.insertLog(logss);
+        return personService.getAddress(code);
     }
-    // 1.2 新增或更新地址信息
+    // 1.2 新增或更新地址信息【个人】
     @ApiOperation(value = "新增或更新地址信息")
     @PostMapping("/insertOrUpdateAddress")
     public Result insertOrUpdateAddress(
             @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String addressid,
-            @ApiParam(value = "用户代码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String usercode,
 //            @ApiParam(value = "地址编码",required = false,defaultValue = "") @RequestParam(required = false) String addressno,
             @ApiParam(value = "地址（必传）",required = false,defaultValue = "") @RequestParam(required = false) String address,
             @ApiParam(value = "手机号（必传）",required = false,defaultValue = "") @RequestParam(required = false) String phone,
-            @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name){
-        if(StringUtils.isNullOrEmpty(usercode)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
+            @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name,
+            HttpServletRequest request){
+        String way = request.getParameter("way");
+        String code = "";
+        if(!"all".equals(way)){
+            Result result = getOpenId(request);
+            if(result.getCode() != 0){
+                return result;
+            }
+            code = (String) result.getData();
         }
         if(StringUtils.isNullOrEmpty(address)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"地址为空");
@@ -435,7 +552,21 @@ public class PersonController {
             return Result.error(CodeMsg.PARAMETER_ISNULL,"姓名为空");
         }
 
-        return personService.insertOrUpdateAddress(addressid,usercode,address,phone,name);
+        Logss logss = new Logss();
+        logss.setUserId(code);
+        logss.setUsername("");
+        logss.setUrlName("查询订单【个人】");
+        logss.setUrl("/getLoginInfo");
+        HashMap<Object, Object> remap = new HashMap<>();
+        remap.put("way",way);
+        remap.put("code",code);
+        remap.put("addressid",addressid);
+        remap.put("address",address);
+        remap.put("phone",phone);
+        remap.put("name",name);
+        logss.setParam(JSONUtil.toJsonStr(remap));
+        personService.insertLog(logss);
+        return personService.insertOrUpdateAddress(addressid,code,address,phone,name);
     }
     /*
      * 6.管理员登录
