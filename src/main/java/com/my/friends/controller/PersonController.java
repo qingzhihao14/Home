@@ -160,11 +160,10 @@ public class PersonController {
     public Result insertOrUpdateLb(@RequestBody Map<String,String> remap,
                                    HttpServletRequest request){
         String id = remap.get("id");
-        if(StringUtils.isNullOrEmpty(id)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
-        }
         Lb lb = new Lb();
-        lb.setId(id);
+        if(!StringUtils.isNullOrEmpty(id)){
+            lb.setId(id);
+        }
         lb.setCode(remap.get("code"));
         lb.setName(remap.get("name"));
         return personService.insertOrUpdateLb(lb);

@@ -17,7 +17,11 @@
             ca.fwqx ca_fwqx,
             ca.fwxz ca_fwxz,
             ca.fwxj ca_fwxj,
-            ca.fwbz ca_fwbz
+            ca.fwbz ca_fwbz,
+            ca.pic_path,
+            ca.pic_type,
+            ca.pic_path,
+            ca.pic_type
         FROM
           t_lb cu
         LEFT JOIN t_lb_item ca ON cu. CODE = ca. parent
@@ -42,6 +46,11 @@
             <result column="ca_fwxz" property="fwxz"/>
             <result column="ca_fwxj" property="fwxj"/>
             <result column="ca_fwbz" property="fwbz"/>
+            <result column="pic_name" jdbcType="VARCHAR" property="picName" />
+            <result column="pic_path" jdbcType="VARCHAR" property="picPath" />
+            <result column="pic_type" jdbcType="VARCHAR" property="picType" />
+            <result column="pic_path" jdbcType="VARCHAR" property="picPath" />
+            <result column="pic_type" jdbcType="VARCHAR" property="picType" />
         </collection >
     </resultMap>
 </mapper>

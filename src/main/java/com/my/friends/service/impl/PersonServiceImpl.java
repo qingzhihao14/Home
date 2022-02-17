@@ -280,7 +280,7 @@ public class PersonServiceImpl implements PersonService {
         }
         int count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
         if(count>0){
-            return Result.success(newfilePath);
+            return Result.success(file_name);
         }else{
             return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
         }
