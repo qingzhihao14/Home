@@ -117,7 +117,6 @@ public class PersonController {
      * 0.获取类别、项目信息
      * */
     @ApiOperation(value = "获取类别、项目信息")
-    @ApiOperationSort(1)
     @GetMapping("/getLbXms")
     public Result getLbXms(HttpServletRequest request,
                            @ApiParam(value = "类别号(传空查询所有)",required = false,defaultValue = "LB1")
@@ -135,7 +134,7 @@ public class PersonController {
     * 1.类别
     * */
     // 1.1 查询类别
-    @ApiOperation(value = "获取类别、项目信息")
+    @ApiOperation(value = "获取类别信息")
     @GetMapping("/getLb")
     public Result getLb(HttpServletRequest request){
         HttpSession session = request.getSession();
@@ -147,12 +146,30 @@ public class PersonController {
         redisTemplate.opsForValue().set("AAA", "ttttttttttttttest", 7200, TimeUnit.SECONDS);
         return personService.getLb();
     }
+    @ApiOperation(value = "删除类别信息")
+    @GetMapping("/delLb")
+    public Result delLb(HttpServletRequest request){
+        String code = request.getParameter("code");
+        if(StringUtils.isNullOrEmpty(code)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"类别code为空");
+        }
+        return personService.delLb(code);
+    }
     // 1.1 查询项目
     @ApiOperation(value = "获取项目信息（热销、精选）")
     @GetMapping("/getXm")
     public Result getXm(HttpServletRequest request){
         String code = request.getParameter("code");
         return personService.getXm(code);
+    }
+    @ApiOperation(value = "删除项目信息")
+    @GetMapping("/delXm")
+    public Result delXm(HttpServletRequest request){
+        String code = request.getParameter("code");
+        if(StringUtils.isNullOrEmpty(code)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"项目code为空");
+        }
+        return personService.delXm(code);
     }
     // 1.2 新增或更新类别
     @ApiOperation(value = "新增或更新类别信息")
@@ -175,8 +192,10 @@ public class PersonController {
     * */
     // 1.1 新增或更新项目
     @ApiOperation(value = "新增或更新项目信息")
-    @RequestMapping(value = "/insertOrUpdateLbItem", method = {RequestMethod.POST})
-    public Result insertOrUpdateItem(@RequestBody Map<String,String> remap){
+    @RequestMapping(value = "/insertOrUpdateLbItem", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result insertOrUpdateItem( @RequestParam Map<String,String> remap,
+                                      @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files){
+        String create = remap.get("create");
         String parent = remap.get("parent");
         if(StringUtils.isNullOrEmpty(parent)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
@@ -194,12 +213,8 @@ public class PersonController {
         if(!StringUtils.isNullOrEmpty(price)){
             lbItem.setPrice(Integer.parseInt(price));
         }
-        String sold = remap.get("sold");
-        if(!StringUtils.isNullOrEmpty(sold)){
-            lbItem.setSold(Integer.parseInt(sold));
-        }
         lbItem.setUnit(remap.get("unit"));
-        return personService.insertOrUpdateItem(lbItem);
+        return personService.insertOrUpdateItem(lbItem, files,create);
     }
 
 

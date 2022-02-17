@@ -138,6 +138,25 @@ public class PersonServiceImpl implements PersonService {
             return Result.error(CodeMsg.NOT_FIND_DATA,"无类别数据，请添加");
         }
     }
+
+    // 1.1删除
+    @Override
+    public Result delLb(String code) {
+        LbItemExample lbItemExample = new LbItemExample();
+        lbItemExample.createCriteria().andParentEqualTo(code);
+        ArrayList<LbItem> lbItems = lbItemMapper.selectByExample(lbItemExample);
+        if(lbItems.size()>0){
+            return Result.error(CodeMsg.OP_FAILED,"请先删除项目");
+        }
+        LbExample example = new LbExample();
+        example.createCriteria().andCodeEqualTo(code);
+        int count = lbMapper.deleteByExample(example);
+        if(count>0){
+            return Result.success("删除成功");
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"删除失败");
+        }
+    }
     // 1.1查询
     @Override
     public Result getXm(String code) {
@@ -200,7 +219,18 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
-
+    // 1.1删除
+    @Override
+    public Result delXm(String code) {
+        LbItemExample lbItemExample = new LbItemExample();
+        lbItemExample.createCriteria().andCodeEqualTo(code);
+        int count = lbItemMapper.deleteByExample(lbItemExample);
+        if(count>0){
+            return Result.success("删除成功");
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"删除失败");
+        }
+    }
 
 
     /*
@@ -209,14 +239,16 @@ public class PersonServiceImpl implements PersonService {
 
     //1.1新增
     @Override
-    public Result insertOrUpdateItem(LbItem lbItem) {
+    public Result insertOrUpdateItem(LbItem lbItem,MultipartFile[] files,String create) {
 
         LbItemExample example = new LbItemExample();
         int count = 0;
-        if(!"".equals(lbItem.getId()) && lbItem.getId()!= null){
+
+        if(!"1".equals(create) && !"".equals(lbItem.getId()) && lbItem.getId()!= null){
             // 编辑
-            example.createCriteria().andIdEqualTo(lbItem.getId());
-            count = lbItemMapper.updateByExample(lbItem, example);
+//            example.createCriteria().andIdEqualTo(lbItem.getId());
+//            count = lbItemMapper.updateByExample(lbItem, example);
+            count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
             if(count>0){
                 return Result.success();
             }else{
@@ -224,8 +256,8 @@ public class PersonServiceImpl implements PersonService {
             }
         }else{
             // 新增
-            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-            lbItem.setId(uuid);
+//            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            lbItem.setId(lbItem.getId());
             example.createCriteria().andCodeIsNotNull();
             ArrayList<LbItem> lbItems = lbItemMapper.selectByExample(example);
             if(lbItems.size()==0){
@@ -238,23 +270,25 @@ public class PersonServiceImpl implements PersonService {
                         }).max(Integer::compare).get();
                 lbItem.setCode("XM"+(max+1));
             }
-            count = lbItemMapper.insert(lbItem);
+            count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
             if(count>0){
-                return Result.success();
+//                Result result = insertOrUpdateLbItemPic(uuid, files);
+//                return result;
+                return Result.success("新增成功");
             }else{
+                // 若信息上传失败 则把上传的图片信息删掉
+                lbItemMapper.deleteByPrimaryKey(lbItem.getId());
                 return Result.error(CodeMsg.OP_FAILED,"新增失败");
             }
         }
     }
     @Override
     public Result insertOrUpdateLbItemPic (String id, MultipartFile[] files){
-
         String original_name = files[0].getOriginalFilename();
         String file_name = "home_" + IdUtil.simpleUUID().substring(0, 15) + '.' + FileUtil.getSuffix(original_name);
         String path = (File.separator + file_name).replaceAll("\\\\", "/");
         String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
         LbItem lbItem = new LbItem();
-        lbItem.setId(id);
         lbItem.setPicName(file_name);
         lbItem.setPicPath(path);
         lbItem.setPicType(FileUtil.getSuffix(original_name));
@@ -278,9 +312,20 @@ public class PersonServiceImpl implements PersonService {
             System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
             return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
         }
-        int count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
+        int count = 0;
+        if("create".equals(id)){
+            id = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            lbItem.setId(id);
+            count = lbItemMapper.insert(lbItem);
+        }else{
+            lbItem.setId(id);
+            count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
+        }
         if(count>0){
-            return Result.success(file_name);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("id",id);
+            map.put("url",file_name);
+            return Result.success(map);
         }else{
             return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
         }

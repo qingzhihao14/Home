@@ -24,9 +24,13 @@ public interface PersonService {
 
     //查询
     Result getLb();
+    //删除
+    Result delLb(String code);
     Result insertOrUpdateLb(Lb lb);
     //查询
     Result getXm(String code);
+    //删除
+    Result delXm(String code);
     //查询
     Result selectLbXm(String parent);
 
@@ -34,7 +38,7 @@ public interface PersonService {
     /*
      * 2.项目
      * */
-    Result insertOrUpdateItem(LbItem lbItem);
+    Result insertOrUpdateItem(LbItem lbItem,MultipartFile[] files,String create);
     Result insertOrUpdateLbItemPic(String id, MultipartFile[] files);
     /*
     *
