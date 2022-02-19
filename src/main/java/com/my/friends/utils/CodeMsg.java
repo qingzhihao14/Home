@@ -21,6 +21,8 @@ public class CodeMsg {
     public static CodeMsg NOT_FIND_DATA = new CodeMsg(500105,"查找不到对应数据");
     public static CodeMsg OP_FAILED = new CodeMsg(500105,"操作失败");
 
+    public static CodeMsg PAY_FAILED = new CodeMsg(101,"支付未完成");
+
     private CodeMsg(int code, String message) {
         this.code = code;
         this.message = message;

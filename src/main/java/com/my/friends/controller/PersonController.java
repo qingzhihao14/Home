@@ -1,44 +1,27 @@
 package com.my.friends.controller;
 
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.extra.ssh.JschUtil;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.log.Log;
 import com.my.friends.dao.*;
-import com.my.friends.dao.extend.LbXm;
+import com.my.friends.mapper.SqlService;
 import com.my.friends.service.CommandService;
 import com.my.friends.service.PersonService;
-import com.my.friends.service.impl.PersonServiceImpl;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
-import com.my.friends.utils.SHA1;
 import com.my.friends.utils.pay.JsCodeSession;
-import com.my.friends.utils.pay.SNSUserInfo;
 import com.my.friends.utils.pay.WeiXinUtil;
 import com.mysql.jdbc.StringUtils;
 import io.swagger.annotations.*;
-import io.swagger.models.auth.In;
 import net.sf.json.JSONObject;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.util.PackageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.MediaType;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +38,9 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
+
+    @Resource
+    SqlService sqlService;
 
     private static final
     org.apache.commons.logging.Log log= LogFactory.getLog(PersonController.class);
@@ -104,8 +90,8 @@ public class PersonController {
                 if(strings.length<=0){
                     return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
                 }
-                String openid = strings[1];
-                return Result.success(openid);
+                User user = sqlService.getUser(strings[1]);
+                return Result.success(user);
             }else{
                 return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
             }
@@ -170,6 +156,16 @@ public class PersonController {
             return Result.error(CodeMsg.PARAMETER_ISNULL,"项目code为空");
         }
         return personService.delXm(code);
+    }
+    @ApiOperation(value = "设置项目精选")
+    @GetMapping("/changeIsChoice")
+    public Result changeIsChoice(HttpServletRequest request){
+        String ischoice = request.getParameter("ischoice");
+        String id = request.getParameter("id");
+        if(StringUtils.isNullOrEmpty(ischoice)||StringUtils.isNullOrEmpty(id)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"ischoice或id为空");
+        }
+        return personService.changeIsChoice(ischoice, id);
     }
     // 1.2 新增或更新类别
     @ApiOperation(value = "新增或更新类别信息")
@@ -276,7 +272,7 @@ public class PersonController {
         }
         Logss logss = new Logss();
         logss.setUserId(usercode);
-        logss.setUsername("");
+        logss.setUsername("**下单");
         logss.setUrlName("下单【个人】");
         logss.setUrl("/order");
         HashMap<Object, Object> reqMap = new HashMap<>();
@@ -485,35 +481,6 @@ public class PersonController {
 //        }
 //    }
 
-
-
-    // 1.2 查询订单
-    @ApiOperation(value = "查询订单【个人】")
-    @GetMapping("/getOrder")
-    public Result getOrder(
-            HttpServletRequest request){
-        String way = request.getParameter("way");
-        String code = "";
-        if(!"all".equals(way)){
-            Result result = getOpenId(request);
-            if(result.getCode() != 0){
-                return result;
-            }
-            code = (String) result.getData();
-        }
-
-        Logss logss = new Logss();
-        logss.setUserId(code);
-        logss.setUsername("");
-        logss.setUrlName("查询订单【个人】");
-        logss.setUrl("/getLoginInfo");
-        HashMap<Object, Object> remap = new HashMap<>();
-        remap.put("way",way);
-        remap.put("code",code);
-        logss.setParam(JSONUtil.toJsonStr(remap));
-        personService.insertLog(logss);
-        return personService.getOrder(code);
-    }
     // 1.3 查询订单-图片
     @ApiOperation(value = "查询订单-图片")
     @GetMapping("/getPictureByOrderno")

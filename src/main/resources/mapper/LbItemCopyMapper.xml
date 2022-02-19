@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.my.friends.mapper.LbItemMapper">
-  <resultMap id="BaseResultMap" type="com.my.friends.dao.LbItem">
-    <id column="id" jdbcType="VARCHAR" property="id" />
-    <result column="code" jdbcType="VARCHAR" property="code" />
+<mapper namespace="com.my.friends.mapper.LbItemCopyMapper">
+  <resultMap id="BaseResultMap" type="com.my.friends.dao.LbItemCopy">
+    <id column="id" jdbcType="INTEGER" property="id" />
     <result column="parent" jdbcType="VARCHAR" property="parent" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="price" jdbcType="INTEGER" property="price" />
     <result column="unit" jdbcType="VARCHAR" property="unit" />
     <result column="sold" jdbcType="INTEGER" property="sold" />
-    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
-    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="ischoice" jdbcType="INTEGER" property="ischoice" />
     <result column="fwqx" jdbcType="VARCHAR" property="fwqx" />
     <result column="fwxz" jdbcType="VARCHAR" property="fwxz" />
     <result column="fwxj" jdbcType="VARCHAR" property="fwxj" />
     <result column="fwbz" jdbcType="VARCHAR" property="fwbz" />
-    <result column="ischoice" jdbcType="INTEGER" property="ischoice" />
     <result column="pic_name" jdbcType="VARCHAR" property="picName" />
     <result column="pic_path" jdbcType="VARCHAR" property="picPath" />
     <result column="pic_type" jdbcType="VARCHAR" property="picType" />
@@ -79,16 +77,16 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, code, parent, `name`, price, unit, sold, create_time, update_time, fwqx, fwxz, 
-    fwxj, fwbz, ischoice, pic_name, pic_path, pic_type
+    id, parent, code, `name`, price, unit, sold, ischoice, fwqx, fwxz, fwxj, fwbz, pic_name, 
+    pic_path, pic_type
   </sql>
-  <select id="selectByExample" parameterType="com.my.friends.dao.LbItemExample" resultMap="BaseResultMap">
+  <select id="selectByExample" parameterType="com.my.friends.dao.LbItemCopyExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
       distinct
     </if>
     <include refid="Base_Column_List" />
-    from t_lb_item
+    from t_lb_item_copy
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
@@ -96,44 +94,42 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
-    from t_lb_item
-    where id = #{id,jdbcType=VARCHAR}
+    from t_lb_item_copy
+    where id = #{id,jdbcType=INTEGER}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
-    delete from t_lb_item
-    where id = #{id,jdbcType=VARCHAR}
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from t_lb_item_copy
+    where id = #{id,jdbcType=INTEGER}
   </delete>
-  <delete id="deleteByExample" parameterType="com.my.friends.dao.LbItemExample">
-    delete from t_lb_item
+  <delete id="deleteByExample" parameterType="com.my.friends.dao.LbItemCopyExample">
+    delete from t_lb_item_copy
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.LbItem" useGeneratedKeys="true">
-    insert into t_lb_item (id,code, parent, `name`,
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.LbItemCopy" useGeneratedKeys="true">
+    insert into t_lb_item_copy (parent, code, `name`, 
       price, unit, sold, 
-      create_time, update_time, fwqx, 
-      fwxz, fwxj, fwbz, ischoice, 
-      pic_name, pic_path, pic_type
-      )
-    values (#{id,jdbcType=VARCHAR},#{code,jdbcType=VARCHAR}, #{parent,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
+      ischoice, fwqx, fwxz, 
+      fwxj, fwbz, pic_name, 
+      pic_path, pic_type)
+    values (#{parent,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
       #{price,jdbcType=INTEGER}, #{unit,jdbcType=VARCHAR}, #{sold,jdbcType=INTEGER}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{fwqx,jdbcType=VARCHAR}, 
-      #{fwxz,jdbcType=VARCHAR}, #{fwxj,jdbcType=VARCHAR}, #{fwbz,jdbcType=VARCHAR}, #{ischoice,jdbcType=INTEGER}, 
-      #{picName,jdbcType=VARCHAR}, #{picPath,jdbcType=VARCHAR}, #{picType,jdbcType=VARCHAR}
-      )
+      #{ischoice,jdbcType=INTEGER}, #{fwqx,jdbcType=VARCHAR}, #{fwxz,jdbcType=VARCHAR}, 
+      #{fwxj,jdbcType=VARCHAR}, #{fwbz,jdbcType=VARCHAR}, #{picName,jdbcType=VARCHAR}, 
+      #{picPath,jdbcType=VARCHAR}, #{picType,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.LbItem" useGeneratedKeys="true">
-    insert into t_lb_item
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.LbItemCopy" useGeneratedKeys="true">
+    insert into t_lb_item_copy
     <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="code != null">
-        code,
-      </if>
       <if test="parent != null">
         parent,
+      </if>
+      <if test="code != null">
+        code,
       </if>
       <if test="name != null">
         `name`,
@@ -147,11 +143,8 @@
       <if test="sold != null">
         sold,
       </if>
-      <if test="createTime != null">
-        create_time,
-      </if>
-      <if test="updateTime != null">
-        update_time,
+      <if test="ischoice != null">
+        ischoice,
       </if>
       <if test="fwqx != null">
         fwqx,
@@ -165,9 +158,6 @@
       <if test="fwbz != null">
         fwbz,
       </if>
-      <if test="ischoice != null">
-        ischoice,
-      </if>
       <if test="picName != null">
         pic_name,
       </if>
@@ -179,11 +169,11 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="code != null">
-        #{code,jdbcType=VARCHAR},
-      </if>
       <if test="parent != null">
         #{parent,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
       </if>
       <if test="name != null">
         #{name,jdbcType=VARCHAR},
@@ -197,11 +187,8 @@
       <if test="sold != null">
         #{sold,jdbcType=INTEGER},
       </if>
-      <if test="createTime != null">
-        #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null">
-        #{updateTime,jdbcType=TIMESTAMP},
+      <if test="ischoice != null">
+        #{ischoice,jdbcType=INTEGER},
       </if>
       <if test="fwqx != null">
         #{fwqx,jdbcType=VARCHAR},
@@ -215,9 +202,6 @@
       <if test="fwbz != null">
         #{fwbz,jdbcType=VARCHAR},
       </if>
-      <if test="ischoice != null">
-        #{ischoice,jdbcType=INTEGER},
-      </if>
       <if test="picName != null">
         #{picName,jdbcType=VARCHAR},
       </if>
@@ -229,23 +213,23 @@
       </if>
     </trim>
   </insert>
-  <select id="countByExample" parameterType="com.my.friends.dao.LbItemExample" resultType="java.lang.Long">
-    select count(*) from t_lb_item
+  <select id="countByExample" parameterType="com.my.friends.dao.LbItemCopyExample" resultType="java.lang.Long">
+    select count(*) from t_lb_item_copy
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
   </select>
   <update id="updateByExampleSelective" parameterType="map">
-    update t_lb_item
+    update t_lb_item_copy
     <set>
       <if test="record.id != null">
-        id = #{record.id,jdbcType=VARCHAR},
-      </if>
-      <if test="record.code != null">
-        code = #{record.code,jdbcType=VARCHAR},
+        id = #{record.id,jdbcType=INTEGER},
       </if>
       <if test="record.parent != null">
         parent = #{record.parent,jdbcType=VARCHAR},
+      </if>
+      <if test="record.code != null">
+        code = #{record.code,jdbcType=VARCHAR},
       </if>
       <if test="record.name != null">
         `name` = #{record.name,jdbcType=VARCHAR},
@@ -259,11 +243,8 @@
       <if test="record.sold != null">
         sold = #{record.sold,jdbcType=INTEGER},
       </if>
-      <if test="record.createTime != null">
-        create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.updateTime != null">
-        update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      <if test="record.ischoice != null">
+        ischoice = #{record.ischoice,jdbcType=INTEGER},
       </if>
       <if test="record.fwqx != null">
         fwqx = #{record.fwqx,jdbcType=VARCHAR},
@@ -276,9 +257,6 @@
       </if>
       <if test="record.fwbz != null">
         fwbz = #{record.fwbz,jdbcType=VARCHAR},
-      </if>
-      <if test="record.ischoice != null">
-        ischoice = #{record.ischoice,jdbcType=INTEGER},
       </if>
       <if test="record.picName != null">
         pic_name = #{record.picName,jdbcType=VARCHAR},
@@ -295,21 +273,19 @@
     </if>
   </update>
   <update id="updateByExample" parameterType="map">
-    update t_lb_item
-    set id = #{record.id,jdbcType=VARCHAR},
-      code = #{record.code,jdbcType=VARCHAR},
+    update t_lb_item_copy
+    set id = #{record.id,jdbcType=INTEGER},
       parent = #{record.parent,jdbcType=VARCHAR},
+      code = #{record.code,jdbcType=VARCHAR},
       `name` = #{record.name,jdbcType=VARCHAR},
       price = #{record.price,jdbcType=INTEGER},
       unit = #{record.unit,jdbcType=VARCHAR},
       sold = #{record.sold,jdbcType=INTEGER},
-      create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      update_time = #{record.updateTime,jdbcType=TIMESTAMP},
+      ischoice = #{record.ischoice,jdbcType=INTEGER},
       fwqx = #{record.fwqx,jdbcType=VARCHAR},
       fwxz = #{record.fwxz,jdbcType=VARCHAR},
       fwxj = #{record.fwxj,jdbcType=VARCHAR},
       fwbz = #{record.fwbz,jdbcType=VARCHAR},
-      ischoice = #{record.ischoice,jdbcType=INTEGER},
       pic_name = #{record.picName,jdbcType=VARCHAR},
       pic_path = #{record.picPath,jdbcType=VARCHAR},
       pic_type = #{record.picType,jdbcType=VARCHAR}
@@ -317,14 +293,14 @@
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <update id="updateByPrimaryKeySelective" parameterType="com.my.friends.dao.LbItem">
-    update t_lb_item
+  <update id="updateByPrimaryKeySelective" parameterType="com.my.friends.dao.LbItemCopy">
+    update t_lb_item_copy
     <set>
-      <if test="code != null">
-        code = #{code,jdbcType=VARCHAR},
-      </if>
       <if test="parent != null">
         parent = #{parent,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        code = #{code,jdbcType=VARCHAR},
       </if>
       <if test="name != null">
         `name` = #{name,jdbcType=VARCHAR},
@@ -338,11 +314,8 @@
       <if test="sold != null">
         sold = #{sold,jdbcType=INTEGER},
       </if>
-      <if test="createTime != null">
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="updateTime != null">
-        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      <if test="ischoice != null">
+        ischoice = #{ischoice,jdbcType=INTEGER},
       </if>
       <if test="fwqx != null">
         fwqx = #{fwqx,jdbcType=VARCHAR},
@@ -356,9 +329,6 @@
       <if test="fwbz != null">
         fwbz = #{fwbz,jdbcType=VARCHAR},
       </if>
-      <if test="ischoice != null">
-        ischoice = #{ischoice,jdbcType=INTEGER},
-      </if>
       <if test="picName != null">
         pic_name = #{picName,jdbcType=VARCHAR},
       </if>
@@ -369,26 +339,24 @@
         pic_type = #{picType,jdbcType=VARCHAR},
       </if>
     </set>
-    where id = #{id,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.my.friends.dao.LbItem">
-    update t_lb_item
-    set code = #{code,jdbcType=VARCHAR},
-      parent = #{parent,jdbcType=VARCHAR},
+  <update id="updateByPrimaryKey" parameterType="com.my.friends.dao.LbItemCopy">
+    update t_lb_item_copy
+    set parent = #{parent,jdbcType=VARCHAR},
+      code = #{code,jdbcType=VARCHAR},
       `name` = #{name,jdbcType=VARCHAR},
       price = #{price,jdbcType=INTEGER},
       unit = #{unit,jdbcType=VARCHAR},
       sold = #{sold,jdbcType=INTEGER},
-      create_time = #{createTime,jdbcType=TIMESTAMP},
-      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      ischoice = #{ischoice,jdbcType=INTEGER},
       fwqx = #{fwqx,jdbcType=VARCHAR},
       fwxz = #{fwxz,jdbcType=VARCHAR},
       fwxj = #{fwxj,jdbcType=VARCHAR},
       fwbz = #{fwbz,jdbcType=VARCHAR},
-      ischoice = #{ischoice,jdbcType=INTEGER},
       pic_name = #{picName,jdbcType=VARCHAR},
       pic_path = #{picPath,jdbcType=VARCHAR},
       pic_type = #{picType,jdbcType=VARCHAR}
-    where id = #{id,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

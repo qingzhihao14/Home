@@ -1,24 +1,18 @@
 package com.my.friends.dao;
 
 import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
 
 /**
- * t_lb_item
+ * t_lb_item_copy
  * @author 
  */
 @Data
-public class LbItem implements Serializable {
+public class LbItemCopy implements Serializable {
     /**
-     * 商品id
+     * 代码
      */
-    private String id;
-
-    /**
-     * 项目代码
-     */
-    private String code;
+    private Integer id;
 
     /**
      * 类别代码
@@ -26,12 +20,17 @@ public class LbItem implements Serializable {
     private String parent;
 
     /**
-     * 商品名称
+     * 项目代码
+     */
+    private String code;
+
+    /**
+     * 项目名称
      */
     private String name;
 
     /**
-     * 价格（分）
+     * 价格
      */
     private Integer price;
 
@@ -41,19 +40,14 @@ public class LbItem implements Serializable {
     private String unit;
 
     /**
-     * 已售数量
+     * 已售数量(热卖）
      */
     private Integer sold;
 
     /**
-     * 创建时间
+     * 是否精选
      */
-    private Date createTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
+    private Integer ischoice;
 
     /**
      * 服务期限
@@ -74,11 +68,6 @@ public class LbItem implements Serializable {
      * 服务保证
      */
     private String fwbz;
-
-    /**
-     * 是否精选
-     */
-    private Integer ischoice;
 
     /**
      * 文件名称

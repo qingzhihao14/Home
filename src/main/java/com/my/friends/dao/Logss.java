@@ -43,4 +43,15 @@ public class Logss implements Serializable {
     private Date createTime;
 
     private static final long serialVersionUID = 1L;
+
+    public Logss() {
+    }
+
+    public Logss(String userId, String username, String urlName, String url, String param) {
+        this.userId = userId;
+        this.username = username;
+        this.urlName = urlName;
+        this.url = url;
+        this.param = param;
+    }
 }

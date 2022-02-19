@@ -1,10 +1,9 @@
 package com.my.friends.pay.paymentdemo.task;
 
-import com.my.friends.pay.paymentdemo.entity.OrderInfo;
-import com.my.friends.pay.paymentdemo.entity.RefundInfo;
-import com.my.friends.pay.paymentdemo.service.OrderInfoService;
-import com.my.friends.pay.paymentdemo.service.RefundInfoService;
-import com.my.friends.pay.paymentdemo.service.WxPayService;
+import com.my.friends.dao.OrdersInfo;
+import com.my.friends.dao.RefundsInfo;
+import com.my.friends.service.pay.OrderInfoService;
+import com.my.friends.service.pay.WxPayService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,8 +21,8 @@ public class WxPayTask {
     @Resource
     private WxPayService wxPayService;
 
-    @Resource
-    private RefundInfoService refundInfoService;
+//    @Resource
+//    private RefundInfoService refundInfoService;
 
     /**
      * 秒 分 时 日 月 周
@@ -47,9 +46,9 @@ public class WxPayTask {
     public void orderConfirm() throws Exception {
         log.info("orderConfirm 被执行......");
 
-        List<OrderInfo> orderInfoList = orderInfoService.getNoPayOrderByDuration(1);
+        List<OrdersInfo> orderInfoList = orderInfoService.getNoPayOrderByDuration(1);
 
-        for (OrderInfo orderInfo : orderInfoList) {
+        for (OrdersInfo orderInfo : orderInfoList) {
             String orderNo = orderInfo.getOrderNo();
             log.warn("超时订单 ===> {}", orderNo);
 
@@ -67,9 +66,9 @@ public class WxPayTask {
         log.info("refundConfirm 被执行......");
 
         //找出申请退款超过5分钟并且未成功的退款单
-        List<RefundInfo> refundInfoList = refundInfoService.getNoRefundOrderByDuration(1);
+        List<RefundsInfo> refundInfoList = wxPayService.getNoRefundOrderByDuration(1);
 
-        for (RefundInfo refundInfo : refundInfoList) {
+        for (RefundsInfo refundInfo : refundInfoList) {
             String refundNo = refundInfo.getRefundNo();
             log.warn("超时未退款的退款单号 ===> {}", refundNo);
 

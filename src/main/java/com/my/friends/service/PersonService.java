@@ -9,11 +9,6 @@ import java.util.Map;
 
 public interface PersonService {
 
-    // 获取自己的信息
-    Person getMyInfo(String WeChat);
-
-    // 获取一个人
-    Person getOnePerson(String WeChat);
 
     // 操作日志
     void insertLog(Logss log);
@@ -31,6 +26,7 @@ public interface PersonService {
     Result getXm(String code);
     //删除
     Result delXm(String code);
+    Result changeIsChoice(String ischoice,String id);
     //查询
     Result selectLbXm(String parent);
 
@@ -63,8 +59,6 @@ public interface PersonService {
     // 新增或更新项目
     Result login(User user,String userName,String detailInfo,String telNumber);
 
-    //查询个人订单信息
-    Result getOrder(String usercode);
     //查询个人订单信息
     Result getPictures(String orderno);
     //查询
