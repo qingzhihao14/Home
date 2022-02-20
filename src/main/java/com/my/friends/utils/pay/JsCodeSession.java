@@ -14,6 +14,17 @@ public class JsCodeSession {
 	//用户标识
 	private String openId;
 
+	public String getUnionid() {
+		return unionid;
+	}
+
+	public void setUnionid(String unionid) {
+		this.unionid = unionid;
+	}
+
+	//用户标识
+	private String unionid;
+
 	public String getSession_key() {
 		return session_key;
 	}

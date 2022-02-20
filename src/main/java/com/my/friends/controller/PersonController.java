@@ -321,12 +321,14 @@ public class PersonController {
             return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
         JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
+
         JsCodeSession jsCodeSession =new JsCodeSession();
 
         if(!jsonObject.containsKey("errcode")){
             jsCodeSession.setSession_key(jsonObject.getString("session_key"));
             jsCodeSession.setOpenId(jsonObject.getString("openid"));
 
+            log.info("通过appid+appSecret+code获取jsonObject =>"+jsonObject.toString());
             log.info("通过appid+appSecret+code获取session_key+openid =>"+jsCodeSession.toString());
 
             log.info("开始执行！");
