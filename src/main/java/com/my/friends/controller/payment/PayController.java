@@ -100,40 +100,34 @@ public class PayController {
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
     @ApiOperation(value = "下单【个人】")
     @RequestMapping(value = "/payone", method = {RequestMethod.POST, RequestMethod.GET})
-    public Result order( @RequestParam Map<String,String> remaps,
+    public Result order( @RequestParam Map<String,String> remap,
                          @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
                          HttpServletRequest request) throws IOException {
 
-
-
-        // 添加 调取支付取消的API
-        String remap1 = remaps.get("remaps");
-
-        JSONObject remap = JSONUtil.parseObj(remap1);
         // 处理参数
-        String code = (String) remap.get("code"); //商品code
+        String code =  remap.get("code"); //商品code
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品code为空");
         }
-        String count = (String)remap.get("count");
+        String count = remap.get("count");
         if(StringUtils.isNullOrEmpty(count)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品count为空");
         }
-        String pay = (String)remap.get("pay");
+        String pay = remap.get("pay");
         if(StringUtils.isNullOrEmpty(pay)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品pay为空");
         }
-        String addressid = (String)remap.get("addressid");
+        String addressid = remap.get("addressid");
         if(StringUtils.isNullOrEmpty(addressid)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品addressid为空");
         }
-        String servicetime = (String)remap.get("servicetime");
+        String servicetime = remap.get("servicetime");
         if(StringUtils.isNullOrEmpty(servicetime)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品servicetime为空");
         }
         // 优惠券 待开发
-        String coupon = (String)remap.get("coupon");
-        String note = (String)remap.get("note");
+        String coupon = remap.get("coupon");
+        String note = remap.get("note");
 
         // 记录日志
 //        Result result = getLoginUser(request);

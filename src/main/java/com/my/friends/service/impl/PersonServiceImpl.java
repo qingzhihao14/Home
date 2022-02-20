@@ -236,30 +236,43 @@ public class PersonServiceImpl implements PersonService {
                 return Result.error(CodeMsg.OP_FAILED,"更新失败");
             }
         }else{
-            // 新增
-//            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
-            lbItem.setId(lbItem.getId());
             example.createCriteria().andCodeIsNotNull();
             ArrayList<LbItem> lbItems = lbItemMapper.selectByExample(example);
-            if(lbItems.size()==0){
+            if (lbItems.size() == 0) {
                 lbItem.setCode("XM1");
-            }else{
+            } else {
                 Integer max = lbItems.stream()
                         .map(LbItem::getCode)
                         .map(s -> {
                             return Integer.parseInt(s.substring(2));
                         }).max(Integer::compare).get();
-                lbItem.setCode("XM"+(max+1));
+                lbItem.setCode("XM" + (max + 1));
             }
-            count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
-            if(count>0){
-//                Result result = insertOrUpdateLbItemPic(uuid, files);
-//                return result;
-                return Result.success("新增成功");
-            }else{
-                // 若信息上传失败 则把上传的图片信息删掉
-                lbItemMapper.deleteByPrimaryKey(lbItem.getId());
-                return Result.error(CodeMsg.OP_FAILED,"新增失败");
+            // 无图片薪资
+            if("1".equals(create)){
+                String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+                lbItem.setId(uuid);
+                count = lbItemMapper.insert(lbItem);
+                if(count>0){
+                    return Result.success();
+                }else{
+                    return Result.error(CodeMsg.OP_FAILED,"更新失败");
+                }
+            }else {
+
+                // // 有图片新增
+                //            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+                lbItem.setId(lbItem.getId());
+                count = lbItemMapper.updateByPrimaryKeySelective(lbItem);
+                if (count > 0) {
+                    //                Result result = insertOrUpdateLbItemPic(uuid, files);
+                    //                return result;
+                    return Result.success("新增成功");
+                } else {
+                    // 若信息上传失败 则把上传的图片信息删掉
+                    lbItemMapper.deleteByPrimaryKey(lbItem.getId());
+                    return Result.error(CodeMsg.OP_FAILED, "新增失败");
+                }
             }
         }
     }

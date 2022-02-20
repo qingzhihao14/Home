@@ -27,9 +27,7 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         //注意前面要加file,不然是访问不了的
         registry.addResourceHandler("/**").addResourceLocations(("file:"+baseAddress+"/").replaceAll("\\\\", "/"));
-
-        registry.addResourceHandler("/**").addResourceLocations(
-                "classpath:/static/");
+//        registry.addResourceHandler("/**").addResourceLocations(("file:"+baseAddress+"/"));
         registry.addResourceHandler("swagger-ui.html").addResourceLocations(
                 "classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations(
@@ -45,9 +43,9 @@ public class CorsConfig implements WebMvcConfigurer {
 //                .allowedMethods("PUT", "DELETE","POST", "GET") //放行哪些请求方式
 //                .allowedHeaders("header1", "header2", "header3") //放行哪些原始请求头部信息
 //                .exposedHeaders("header1", "header2") //暴露哪些头部信息
-//                .allowCredentials(false) //是否发送 Cookie
+                .allowCredentials(false) //是否发送 Cookie
                 // 是否允许证书（cookies）
-                .allowCredentials(true)
+//                .allowCredentials(true)
                 // 设置允许的方法
                 .allowedMethods("*")
                 // 跨域允许时间
