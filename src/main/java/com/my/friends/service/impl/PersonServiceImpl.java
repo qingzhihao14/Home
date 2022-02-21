@@ -189,6 +189,110 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
+    //1.2新增
+    @Override
+    public Result insertOrUpdateLbs(Lb lb,String create,MultipartFile[] files) {
+        LbExample example = new LbExample();
+        int count = 0;
+        if(!"1".equals(create) && !"".equals(lb.getId()) && lb.getId()!= null){
+            // 编辑
+//            example.createCriteria().andIdEqualTo(lb.getId());
+            count = lbMapper.updateByPrimaryKeySelective(lb);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
+        }else{
+            example.createCriteria().andCodeIsNotNull();
+            ArrayList<Lb> lbs = lbMapper.selectByExample(example);
+            if(lbs.size()==0){
+                lb.setCode("LB1");
+            }else{
+                Integer max = lbs.stream()
+                        .map(Lb::getCode)
+                        .map(s -> {
+                            return Integer.parseInt(s.substring(2));
+                        }).max(Integer::compare).get();
+                lb.setCode("LB"+(max+1));
+            }
+            // 无图片新增
+            if("1".equals(create) && StringUtils.isNullOrEmpty(lb.getId())){
+                String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+                lb.setId(uuid);
+                count = lbMapper.insert(lb);
+                if(count>0){
+                    return Result.success();
+                }else{
+                    return Result.error(CodeMsg.OP_FAILED,"新增失败");
+                }
+            }else {
+                // // 有图片新增
+                //            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+                lb.setId(lb.getId());
+                count = lbMapper.updateByPrimaryKeySelective(lb);
+                if (count > 0) {
+                    //                Result result = insertOrUpdateLbItemPic(uuid, files);
+                    //                return result;
+                    return Result.success("新增成功");
+                } else {
+                    // 若信息上传失败 则把上传的图片信息删掉
+                    lbItemMapper.deleteByPrimaryKey(lb.getId());
+                    return Result.error(CodeMsg.OP_FAILED, "新增失败");
+                }
+            }
+        }
+    }
+
+    @Override
+    public Result insertOrUpdateLbPic (String id, MultipartFile[] files){
+        String original_name = files[0].getOriginalFilename();
+        String file_name = "home_" + IdUtil.simpleUUID().substring(0, 15) + '.' + FileUtil.getSuffix(original_name);
+        String path = (File.separator + "fl"+File.separator + file_name).replaceAll("\\\\", "/");
+        String newfilePath = (baseAddress + path).replaceAll("\\\\", "/");
+        Lb lb = new Lb();
+        lb.setPicName(file_name);
+        lb.setPicPath(path);
+        lb.setPicType(FileUtil.getSuffix(original_name));
+        try {
+            // 创建本地文件存放 文件夹 路径实例
+            File dest = new File(baseAddress);
+            // 判断本地 文件夹 不存在就创建
+            if (!dest.exists()) {
+                dest.mkdirs();
+            }
+            // 创建文件实例
+            File uploadFile = FileUtil.file(newfilePath);
+            // 如果文件在本地存在就删除
+            if (uploadFile.exists()) {
+                uploadFile.delete();
+            }
+            files[0].transferTo(uploadFile);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
+            return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
+        }
+        int count = 0;
+        if("create".equals(id)){
+            id = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            lb.setId(id);
+            count = lbMapper.insert(lb);
+        }else{
+            lb.setId(id);
+            count = lbMapper.updateByPrimaryKeySelective(lb);
+        }
+        if(count>0){
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("id",id);
+            map.put("url",path);
+            return Result.success(map);
+        }else{
+            return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
+        }
+    }
+
     // 1.1删除
     @Override
     public Result delXm(String code) {
@@ -248,8 +352,8 @@ public class PersonServiceImpl implements PersonService {
                         }).max(Integer::compare).get();
                 lbItem.setCode("XM" + (max + 1));
             }
-            // 无图片薪资
-            if("1".equals(create)){
+            // 无图片新增
+            if("1".equals(create) && StringUtils.isNullOrEmpty(lbItem.getId())){
                 String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
                 lbItem.setId(uuid);
                 count = lbItemMapper.insert(lbItem);

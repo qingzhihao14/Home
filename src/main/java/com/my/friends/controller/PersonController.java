@@ -182,7 +182,40 @@ public class PersonController {
         return personService.insertOrUpdateLb(lb);
     }
 
+    // 1.2 新增或更新类别
+    @ApiOperation(value = "新增或更新类别信息（新）")
+    @RequestMapping(value = "/insertOrUpdateLbs", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result insertOrUpdateLbs(@RequestParam Map<String,String> remap,
+                                   @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files){
+        String create = remap.get("create");
+        String id = remap.get("id");
+        Lb lb = new Lb();
+        if(!StringUtils.isNullOrEmpty(id)){
+            lb.setId(id);
+        }
+        lb.setCode(remap.get("code"));
+        lb.setName(remap.get("name"));
+        return personService.insertOrUpdateLbs(lb,create,files);
+    }
 
+
+    // 1.1 新增或更新项目
+    @ApiOperation(value = "上传类别图片")
+    @RequestMapping(value = "/insertOrUpdateLbPic", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result insertOrUpdateLbPic(
+//            @RequestBody Map<String,String> remap, //不行
+            @RequestParam Map<String,String> remap,
+            @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
+            HttpServletRequest request){
+        String id = remap.get("id");
+        if(StringUtils.isNullOrEmpty(id)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"项目号为空");
+        }
+        if(files.length == 0){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"无图片");
+        }
+        return personService.insertOrUpdateLbPic(id,files);
+    }
     /*
     * 2.项目
     * */
@@ -191,8 +224,8 @@ public class PersonController {
     @RequestMapping(value = "/insertOrUpdateLbItem", method = {RequestMethod.POST, RequestMethod.GET})
     public Result insertOrUpdateItem( @RequestParam Map<String,String> remap,
                                       @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files){
-        String create = remap.get("create");
         String parent = remap.get("parent");
+        String create = remap.get("create");
         if(StringUtils.isNullOrEmpty(parent)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"类别号为空");
         }

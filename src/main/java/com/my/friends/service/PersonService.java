@@ -22,6 +22,8 @@ public interface PersonService {
     //删除
     Result delLb(String code);
     Result insertOrUpdateLb(Lb lb);
+    Result insertOrUpdateLbs(Lb lb,String create,MultipartFile[] files);
+    Result insertOrUpdateLbPic(String id, MultipartFile[] files);
     //查询
     Result getXm(String code);
     //删除

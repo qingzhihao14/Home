@@ -7,6 +7,9 @@
             cu.id  id,
             cu.`code`  code,
             cu.`name`  name,
+            cu.pic_path,
+            cu.pic_type,
+            cu.ischoice,
             ca.id ca_id,
             ca.parent ca_parent,
             ca.code ca_code,
@@ -18,11 +21,11 @@
             ca.fwxz ca_fwxz,
             ca.fwxj ca_fwxj,
             ca.fwbz ca_fwbz,
-            ca.pic_path,
-            ca.pic_type,
-            ca.pic_path,
-            ca.pic_type,
-            ca.ischoice
+            ca.pic_path pic_pathz,
+            ca.pic_type pic_typez,
+            ca.pic_path pic_pathz,
+            ca.pic_type pic_typez,
+            ca.ischoice ischoicez
         FROM
           t_lb cu
         LEFT JOIN t_lb_item ca ON cu. CODE = ca. parent
@@ -47,12 +50,12 @@
             <result column="ca_fwxz" property="fwxz"/>
             <result column="ca_fwxj" property="fwxj"/>
             <result column="ca_fwbz" property="fwbz"/>
-            <result column="pic_name" jdbcType="VARCHAR" property="picName" />
-            <result column="pic_path" jdbcType="VARCHAR" property="picPath" />
-            <result column="pic_type" jdbcType="VARCHAR" property="picType" />
-            <result column="pic_path" jdbcType="VARCHAR" property="picPath" />
-            <result column="pic_type" jdbcType="VARCHAR" property="picType" />
-            <result column="ischoice" jdbcType="VARCHAR" property="ischoice" />
+            <result column="pic_namez" jdbcType="VARCHAR" property="picName" />
+            <result column="pic_pathz" jdbcType="VARCHAR" property="picPath" />
+            <result column="pic_typez" jdbcType="VARCHAR" property="picType" />
+            <result column="pic_pathz" jdbcType="VARCHAR" property="picPath" />
+            <result column="pic_typez" jdbcType="VARCHAR" property="picType" />
+            <result column="ischoicez" jdbcType="VARCHAR" property="ischoice" />
         </collection >
     </resultMap>
 </mapper>
