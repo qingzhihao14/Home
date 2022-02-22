@@ -27,4 +27,11 @@ public interface OrdersInfoMapper {
     int updateByPrimaryKeySelective(OrdersInfo record);
 
     int updateByPrimaryKey(OrdersInfo record);
+
+
+    /**
+     * 分页查询用户
+     * @return
+     */
+    List<OrdersInfo> selectOrdersInfoPage();
 }

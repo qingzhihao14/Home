@@ -2,6 +2,8 @@ package com.my.friends.service.impl;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.my.friends.controller.PersonController;
 import com.my.friends.dao.*;
 import com.my.friends.dao.extend.LbXm;
@@ -11,6 +13,9 @@ import com.my.friends.service.PersonService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.JwtUtils;
 import com.my.friends.utils.Result;
+import com.my.friends.utils.pageHelper.PageRequest;
+import com.my.friends.utils.pageHelper.PageResult;
+import com.my.friends.utils.pageHelper.PageUtils;
 import com.mysql.jdbc.StringUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.logging.Log;
@@ -50,6 +55,10 @@ public class PersonServiceImpl implements PersonService {
     private LogssMapper LogssMapper;
     @Value("${file.basepath}")
     private String baseAddress;
+
+    @Resource
+    private OrdersInfoMapper ordersInfoMapper;
+
     private static final Log log= LogFactory.getLog(PersonController.class);
     @Resource
     LbsExample lbExamples;
@@ -767,5 +776,26 @@ public class PersonServiceImpl implements PersonService {
                 return Result.error(CodeMsg.OP_FAILED,"新增失败");
             }
         }
+    }
+    @Override
+    public PageResult findPage(PageRequest pageRequest) {
+//            String pageNum = remap.get("pageNum");
+//            String pageSize = remap.get("pageSize");
+//        PageRequest pageRequest = new PageRequest();
+        return PageUtils.getPageResult(pageRequest, getPageInfo(pageRequest));
+    }
+
+
+    /**
+     * 调用分页插件完成分页
+     * @param pageQuery
+     * @return
+     */
+    private PageInfo<OrdersInfo> getPageInfo(PageRequest pageRequest) {
+        int pageNum = pageRequest.getPageNum();
+        int pageSize = pageRequest.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+        List<OrdersInfo> sysMenus = ordersInfoMapper.selectOrdersInfoPage();
+        return new PageInfo<OrdersInfo>(sysMenus);
     }
 }
