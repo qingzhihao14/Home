@@ -1,7 +1,9 @@
 package com.my.friends.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.my.friends.controller.PersonController;
@@ -22,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -55,9 +58,11 @@ public class PersonServiceImpl implements PersonService {
     private LogssMapper LogssMapper;
     @Value("${file.basepath}")
     private String baseAddress;
-
     @Resource
     private OrdersInfoMapper ordersInfoMapper;
+    @Resource
+    private SqlService sqlService;
+
 
     private static final Log log= LogFactory.getLog(PersonController.class);
     @Resource
@@ -782,7 +787,27 @@ public class PersonServiceImpl implements PersonService {
 //            String pageNum = remap.get("pageNum");
 //            String pageSize = remap.get("pageSize");
 //        PageRequest pageRequest = new PageRequest();
-        return PageUtils.getPageResult(pageRequest, getPageInfo(pageRequest));
+        PageResult result = PageUtils.getPageResult(pageRequest, getPageInfo(pageRequest));
+        List<Object> lis = result.getContent().stream().map(ordersInfo -> {
+            String userId = ((OrdersInfo) ordersInfo).getUserId();
+            String addressno = ((OrdersInfo) ordersInfo).getAddressno();
+            User user = sqlService.getUser(userId);
+            Address address = sqlService.getAddress(addressno);
+            Map<String, Object> map = new HashMap<String, Object>();
+            BeanUtil.copyProperties(ordersInfo, map);
+            if(!ObjectUtils.isEmpty(address)){
+                map.put("name",address.getName());
+                map.put("address",address.getAddress());
+            }else{
+                map.put("name",user.getName());
+                map.put("address","");
+            }
+            map.put("username",user.getName());
+            map.put("avatar",user.getNote());
+            return map;
+        }).collect(Collectors.toList());
+        result.setContent(lis);
+        return result;
     }
 
 

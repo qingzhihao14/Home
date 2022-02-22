@@ -1,9 +1,6 @@
 package com.my.friends.mapper;
 
-import com.my.friends.dao.LbItem;
-import com.my.friends.dao.OrdersInfo;
-import com.my.friends.dao.RefundsInfo;
-import com.my.friends.dao.User;
+import com.my.friends.dao.*;
 import com.my.friends.pay.paymentdemo.enums.OrderStatus;
 import com.my.friends.pay.paymentdemo.enums.wxpay.WxRefundStatus;
 import org.apache.ibatis.annotations.Mapper;
@@ -30,7 +27,15 @@ public interface SqlService {
             " where code=#{code}  limit 1")
     User getUser(@Param("code")  String code);
 
+    /*
+     *
+     *   获取用户个人地址信息
+     * */
 
+    @Select("SELECT *  " +
+            " FROM t_address " +
+            " where code=#{code}  limit 1")
+    Address getAddress(@Param("code")  String code);
 
     /*
      *

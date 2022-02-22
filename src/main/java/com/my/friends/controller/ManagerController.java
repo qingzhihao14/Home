@@ -83,8 +83,8 @@ public class ManagerController {
         return personService.selectLbXm(parent);
     }
     @PostMapping(value="/findPage")
-    public Object findPage(@RequestBody PageRequest pageRequest) {
-        return personService.findPage(pageRequest);
+    public Result findPage(@RequestBody PageRequest pageRequest) {
+        return Result.success(personService.findPage(pageRequest));
     }
 
 }
