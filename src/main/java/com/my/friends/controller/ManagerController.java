@@ -89,6 +89,14 @@ public class ManagerController {
     public Result findPage(@RequestBody PageRequest pageRequest) {
         return Result.success(personService.findPage(pageRequest));
     }
+
+    /*
+     * 0.获取订单信息
+     * */
+    @PostMapping(value="/taskFindOrders")
+    public Result taskFindOrders(@RequestBody PageRequest pageRequest) {
+        return Result.success(personService.taskFindOrders(pageRequest));
+    }
     /*
      * 0.获取日志信息
      * */
@@ -96,4 +104,6 @@ public class ManagerController {
     public Result findLogPage(@RequestBody PageRequest pageRequest) {
         return Result.success(personService.findLogPage(pageRequest));
     }
+
+
 }

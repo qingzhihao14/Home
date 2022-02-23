@@ -95,4 +95,16 @@ public interface SqlService {
             " where order_no=#{order_no}   limit 1")
     RefundsInfo getRefundsInfoByRefundsNo(String order_no);
 
+
+    /*
+    * 定时查询新订单
+    * */
+    @Select("SELECT count(1)  " +
+            " FROM  t_orders_info " +
+            " order by create_time desc")
+    int getNewOrdersCount();
+    @Select("SELECT *  " +
+            " FROM  t_orders_info " +
+            " order by create_time desc limit #{limit} ")
+    ArrayList<OrdersInfo> getNewOrdersList(@Param("limit") int limit);
 }

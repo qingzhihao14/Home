@@ -2,14 +2,18 @@ package com.my.friends.pay.paymentdemo.task;
 
 import com.my.friends.dao.OrdersInfo;
 import com.my.friends.dao.RefundsInfo;
+import com.my.friends.mapper.SqlService;
 import com.my.friends.service.pay.OrderInfoService;
 import com.my.friends.service.pay.WxPayService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -20,6 +24,12 @@ public class WxPayTask {
 
     @Resource
     private WxPayService wxPayService;
+
+    @Resource
+    private SqlService sqlService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
 //    @Resource
 //    private RefundInfoService refundInfoService;
@@ -59,7 +69,7 @@ public class WxPayTask {
 
 
     /**
-     * 从第0秒开始每隔30秒执行1次，查询创建超过5分钟，并且未成功的退款单
+     * 从第0秒开始每隔30秒执行1次，并且未成功的退款单
      */
     @Scheduled(cron = "0/30 * * * * ?")
     public void refundConfirm() throws Exception {
@@ -77,4 +87,22 @@ public class WxPayTask {
         }
     }
 
+    /**
+     * 从第0秒开始每隔30秒执行1次，查询新创建的订单
+     */
+    /*
+     * 定时查询新订单
+     * */
+    @Scheduled(cron = "0/60 * * * * ?")
+    public void newOrders() throws Exception {
+        log.info("newOrders 被执行......");
+        int newOrdersCount = sqlService.getNewOrdersCount();
+        if(newOrdersCount>0){
+            log.info("订单数量 ===> {}"+ newOrdersCount);
+            redisTemplate.opsForValue().set("newOrdersCount", String.valueOf(newOrdersCount), 7200, TimeUnit.SECONDS);
+        }else{
+            log.info("暂无订单 ===> {}");
+        }
+
+    }
 }

@@ -99,4 +99,10 @@ public interface PersonService {
      */
     PageResult findPage(PageRequest pageRequest);
     PageResult findLogPage(PageRequest pageRequest);
+
+
+    /*
+     * 定时查询新订单
+     * */
+    PageResult taskFindOrders(PageRequest pageRequest);
 }

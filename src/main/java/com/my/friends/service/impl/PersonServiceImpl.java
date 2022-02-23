@@ -22,7 +22,9 @@ import com.mysql.jdbc.StringUtils;
 import io.jsonwebtoken.Claims;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,6 +66,8 @@ public class PersonServiceImpl implements PersonService {
     @Resource
     private SqlService sqlService;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     private static final Log log= LogFactory.getLog(PersonController.class);
     @Resource
@@ -833,7 +837,7 @@ public class PersonServiceImpl implements PersonService {
 
     /**
      * 调用分页插件完成分页
-     * @param pageQuery
+     * @param pageRequest
      * @return
      */
     private PageInfo<OrdersInfo> getPageInfo(PageRequest pageRequest) {
@@ -886,7 +890,7 @@ public class PersonServiceImpl implements PersonService {
 
     /**
      * 调用分页插件完成分页
-     * @param pageQuery
+     * @param pageRequest
      * @return
      */
     private PageInfo<Logss> getLogPageInfo(PageRequest pageRequest) {
@@ -896,4 +900,83 @@ public class PersonServiceImpl implements PersonService {
         List<Logss> logss = LogssMapper.selectLogInfoPage();
         return new PageInfo<Logss>(logss);
     }
+
+
+
+    /*
+     * 定时查询新订单
+     * */
+    @Override
+    public PageResult taskFindOrders(PageRequest pageRequest) {
+//            String pageNum = remap.get("pageNum");
+//            String pageSize = remap.get("pageSize");
+//        PageRequest pageRequest = new PageRequest();
+//        String searchParam = pageRequest.getSearchParam();
+        PageResult result = PageUtils.getPageResult(pageRequest, taskGetPageInfo(pageRequest));
+        if(result.getContent().size()==0){
+            return result;
+        }
+        Stream<AllOrdersInfo> mapStream = result.getContent().stream().map(ordersInfo -> {
+            AllOrdersInfo allOrdersInfo = new AllOrdersInfo();
+            BeanUtil.copyProperties(ordersInfo, allOrdersInfo);
+            String userId = allOrdersInfo.getUserId();
+            String addressno = allOrdersInfo.getAddressno();
+            User user = sqlService.getUser(userId);
+            Address address = sqlService.getAddress(addressno);
+            if (!ObjectUtils.isEmpty(address)) {
+                allOrdersInfo.setName(address.getName());
+                allOrdersInfo.setAddress(address.getAddress());
+                allOrdersInfo.setPhone(address.getPhone());
+            } else {
+                allOrdersInfo.setName("");
+                allOrdersInfo.setAddress("");
+                allOrdersInfo.setPhone("");
+            };
+            allOrdersInfo.setUsername(user.getName());
+            allOrdersInfo.setAvatar(user.getNote());
+            allOrdersInfo.setSex(user.getSex());
+            return allOrdersInfo;
+        });
+        List<Object> lis = new ArrayList<>();
+//        Stream<AllOrdersInfo> allOrdersInfoStream = null;
+//        if(!StringUtils.isNullOrEmpty(searchParam)){
+//            allOrdersInfoStream = mapStream
+////                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam));
+////                    .filter(allOrdersInfo -> allOrdersInfo.getOrderNo().contains(searchParam))
+////                    .filter(allOrdersInfo -> allOrdersInfo.getTitle().contains(searchParam))
+////                    .filter(allOrdersInfo -> allOrdersInfo.getAddress().contains(searchParam))
+//                    .filter(allOrdersInfo -> allOrdersInfo.getPhone().contains(searchParam));
+////                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam))
+//
+//            lis = allOrdersInfoStream.collect(Collectors.toList());
+//        }else{
+//            lis = mapStream.collect(Collectors.toList());
+//        }
+        lis = mapStream.collect(Collectors.toList());
+        result.setContent(lis);
+        return result;
+    }
+
+
+    /**
+     * 调用分页插件完成分页
+     * @param pageRequest
+     * @return
+     */
+    private PageInfo<OrdersInfo> taskGetPageInfo(PageRequest pageRequest) {
+        int pageNum = pageRequest.getPageNum();
+        int pageSize = pageRequest.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+
+        String newOrdersCountA = redisTemplate.opsForValue().get("newOrdersCount");
+        int newOrdersCountB = sqlService.getNewOrdersCount();
+        if(Integer.parseInt(newOrdersCountA) < newOrdersCountB){
+            int count = newOrdersCountB - Integer.parseInt(newOrdersCountA);
+            ArrayList<OrdersInfo> newOrdersList = sqlService.getNewOrdersList(count);
+            return new PageInfo<OrdersInfo>(newOrdersList);
+        }else{
+            return new PageInfo<OrdersInfo>(new ArrayList<OrdersInfo>());
+        }
+    }
+
 }
