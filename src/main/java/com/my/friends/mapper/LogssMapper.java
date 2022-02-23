@@ -27,4 +27,11 @@ public interface LogssMapper {
     int updateByPrimaryKeySelective(Logss record);
 
     int updateByPrimaryKey(Logss record);
+
+
+    /**
+     * 分页查询用户
+     * @return
+     */
+    List<Logss> selectLogInfoPage();
 }

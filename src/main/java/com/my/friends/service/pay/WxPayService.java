@@ -68,4 +68,18 @@ public interface WxPayService {
     String queryRefund(String orderNo) throws Exception;
 
     void updateRefund(String content);
+
+    void refund(String orderNo, String reason) throws Exception;
+
+    RefundsInfo createRefundByOrderNo(String orderNo, String reason);
+
+    void processRefund(Map<String, Object> bodyMap) throws Exception;
+
+//    String queryBill(String billDate, String type) throws Exception;
+
+//    String downloadBill(String billDate, String type) throws Exception;
+//
+//    Map<String, Object> nativePayV2(Long productId, String remoteAddr) throws Exception;
+
+
 }

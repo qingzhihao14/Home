@@ -70,6 +70,10 @@ public interface SqlService {
             " FROM  t_orders_info " +
             " where order_no=#{order_no} limit 1 ")
     String getOrderStatusByOrderNo(@Param("order_no") String order_no);
+    @Select("SELECT *  " +
+            " FROM  t_orders_info " +
+            " where order_no=#{order_no}  limit 1 ")
+    OrdersInfo getOrdersByOrderNo(@Param("order_no") String order_no);
 
     @Update(" update t_orders_info " +
             " set order_status = #{order_status}" +
@@ -85,5 +89,10 @@ public interface SqlService {
             " FROM  t_refunds_info " +
             " where refund_status=#{refund_status} and  unix_timestamp(create_time) < unix_timestamp(#{create_time})  ")
     List<RefundsInfo> getRefundsInfobyOrderAndLessThanCreateTimeFiveMins(String refund_status, Instant create_time);
+
+    @Select("SELECT *  " +
+            " FROM  t_refunds_info " +
+            " where order_no=#{order_no}   limit 1")
+    RefundsInfo getRefundsInfoByRefundsNo(String order_no);
 
 }

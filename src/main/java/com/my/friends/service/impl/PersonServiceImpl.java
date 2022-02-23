@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -787,25 +788,44 @@ public class PersonServiceImpl implements PersonService {
 //            String pageNum = remap.get("pageNum");
 //            String pageSize = remap.get("pageSize");
 //        PageRequest pageRequest = new PageRequest();
+        String searchParam = pageRequest.getSearchParam();
         PageResult result = PageUtils.getPageResult(pageRequest, getPageInfo(pageRequest));
-        List<Object> lis = result.getContent().stream().map(ordersInfo -> {
-            String userId = ((OrdersInfo) ordersInfo).getUserId();
-            String addressno = ((OrdersInfo) ordersInfo).getAddressno();
-            User user = sqlService.getUser(userId);
-            Address address = sqlService.getAddress(addressno);
-            Map<String, Object> map = new HashMap<String, Object>();
-            BeanUtil.copyProperties(ordersInfo, map);
-            if(!ObjectUtils.isEmpty(address)){
-                map.put("name",address.getName());
-                map.put("address",address.getAddress());
-            }else{
-                map.put("name",user.getName());
-                map.put("address","");
-            }
-            map.put("username",user.getName());
-            map.put("avatar",user.getNote());
-            return map;
-        }).collect(Collectors.toList());
+        Stream<AllOrdersInfo> mapStream = result.getContent().stream().map(ordersInfo -> {
+                    AllOrdersInfo allOrdersInfo = new AllOrdersInfo();
+                    BeanUtil.copyProperties(ordersInfo, allOrdersInfo);
+                    String userId = allOrdersInfo.getUserId();
+                    String addressno = allOrdersInfo.getAddressno();
+                    User user = sqlService.getUser(userId);
+                    Address address = sqlService.getAddress(addressno);
+                    if (!ObjectUtils.isEmpty(address)) {
+                        allOrdersInfo.setName(address.getName());
+                        allOrdersInfo.setAddress(address.getAddress());
+                        allOrdersInfo.setPhone(address.getPhone());
+                    } else {
+                        allOrdersInfo.setName("");
+                        allOrdersInfo.setAddress("");
+                        allOrdersInfo.setPhone("");
+                    };
+                    allOrdersInfo.setUsername(user.getName());
+                    allOrdersInfo.setAvatar(user.getNote());
+                    allOrdersInfo.setSex(user.getSex());
+                    return allOrdersInfo;
+                });
+        List<Object> lis = new ArrayList<>();
+        Stream<AllOrdersInfo> allOrdersInfoStream = null;
+        if(!StringUtils.isNullOrEmpty(searchParam)){
+            allOrdersInfoStream = mapStream
+//                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam));
+//                    .filter(allOrdersInfo -> allOrdersInfo.getOrderNo().contains(searchParam))
+//                    .filter(allOrdersInfo -> allOrdersInfo.getTitle().contains(searchParam))
+//                    .filter(allOrdersInfo -> allOrdersInfo.getAddress().contains(searchParam))
+                    .filter(allOrdersInfo -> allOrdersInfo.getPhone().contains(searchParam));
+//                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam))
+
+            lis = allOrdersInfoStream.collect(Collectors.toList());
+        }else{
+            lis = mapStream.collect(Collectors.toList());
+        }
         result.setContent(lis);
         return result;
     }
@@ -822,5 +842,58 @@ public class PersonServiceImpl implements PersonService {
         PageHelper.startPage(pageNum, pageSize);
         List<OrdersInfo> sysMenus = ordersInfoMapper.selectOrdersInfoPage();
         return new PageInfo<OrdersInfo>(sysMenus);
+    }
+
+    @Override
+    public PageResult findLogPage(PageRequest pageRequest) {
+//            String pageNum = remap.get("pageNum");
+//            String pageSize = remap.get("pageSize");
+//        PageRequest pageRequest = new PageRequest();
+        String searchParam = pageRequest.getSearchParam();
+        PageResult result = PageUtils.getPageResult(pageRequest, getLogPageInfo(pageRequest));
+        Stream<HashMap<Object, Object>> mapStream = result.getContent().stream().map(ordersInfo -> {
+
+            HashMap<Object, Object> map = new HashMap<>();
+            BeanUtil.copyProperties(ordersInfo, map);
+            String userId = ((Logss)ordersInfo).getUserId();
+            User user = sqlService.getUser(userId);
+            if (!ObjectUtils.isEmpty(user)) {
+                map.put("name",user.getName());
+                map.put("sex",user.getSex());
+                map.put("avatar",user.getNote());
+            }
+            return map;
+        });
+        List<Object> lis = new ArrayList<>();
+        Stream<HashMap<Object, Object>> allOrdersInfoStream = null;
+        if(!StringUtils.isNullOrEmpty(searchParam)){
+            allOrdersInfoStream = mapStream
+//                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam));
+//                    .filter(allOrdersInfo -> allOrdersInfo.getOrderNo().contains(searchParam))
+//                    .filter(allOrdersInfo -> allOrdersInfo.getTitle().contains(searchParam))
+//                    .filter(allOrdersInfo -> allOrdersInfo.getAddress().contains(searchParam))
+                    .filter(allOrdersInfo -> allOrdersInfo.get("name").toString().contains(searchParam));
+//                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam))
+
+            lis = allOrdersInfoStream.collect(Collectors.toList());
+        }else{
+            lis = mapStream.collect(Collectors.toList());
+        }
+        result.setContent(lis);
+        return result;
+    }
+
+
+    /**
+     * 调用分页插件完成分页
+     * @param pageQuery
+     * @return
+     */
+    private PageInfo<Logss> getLogPageInfo(PageRequest pageRequest) {
+        int pageNum = pageRequest.getPageNum();
+        int pageSize = pageRequest.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+        List<Logss> logss = LogssMapper.selectLogInfoPage();
+        return new PageInfo<Logss>(logss);
     }
 }

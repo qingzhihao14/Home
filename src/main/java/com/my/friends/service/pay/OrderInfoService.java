@@ -2,6 +2,7 @@ package com.my.friends.service.pay;
 
 import com.my.friends.dao.OrdersInfo;
 import com.my.friends.dao.User;
+import com.my.friends.pay.paymentdemo.enums.OrderStatus;
 
 import java.util.List;
 
@@ -13,11 +14,11 @@ public interface OrderInfoService {
 //
 //    List<OrderInfo> listOrderByCreateTimeDesc();
 //
-//    void updateStatusByOrderNo(String orderNo, OrderStatus orderStatus);
+    void updateStatusByOrderNo(String orderNo, OrderStatus orderStatus);
 //
 //    String getOrderStatus(String orderNo);
 //
     List<OrdersInfo> getNoPayOrderByDuration(int minutes);
 //
-//    OrderInfo getOrderByOrderNo(String orderNo);
+    OrdersInfo getOrderByOrderNo(String orderNo);
 }

@@ -108,11 +108,11 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.RefundsInfo" useGeneratedKeys="true">
-    insert into t_refunds_info (order_no, refund_no, refund_id, 
+    insert into t_refunds_info (id,order_no, refund_no, refund_id,
       total_fee, refund, reason, 
       refund_status, content_return, content_notify, 
       create_time, update_time)
-    values (#{orderNo,jdbcType=VARCHAR}, #{refundNo,jdbcType=VARCHAR}, #{refundId,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR},#{orderNo,jdbcType=VARCHAR}, #{refundNo,jdbcType=VARCHAR}, #{refundId,jdbcType=VARCHAR},
       #{totalFee,jdbcType=INTEGER}, #{refund,jdbcType=INTEGER}, #{reason,jdbcType=VARCHAR}, 
       #{refundStatus,jdbcType=VARCHAR}, #{contentReturn,jdbcType=VARCHAR}, #{contentNotify,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})

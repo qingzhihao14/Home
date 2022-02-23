@@ -1,5 +1,6 @@
 package com.my.friends.mapper;
 
+import com.my.friends.dao.Logss;
 import com.my.friends.dao.OrdersInfo;
 import com.my.friends.dao.OrdersInfoExample;
 import java.util.List;

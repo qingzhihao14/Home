@@ -13,6 +13,18 @@ public class PageRequest {
      */
     private int pageSize;
 
+    /**
+     * 搜索参数
+     */
+    private String searchParam;
+
+    public String getSearchParam() {
+        return searchParam;
+    }
+
+    public void setSearchParam(String searchParam) {
+        this.searchParam = searchParam;
+    }
     public int getPageNum() {
         return pageNum;
     }

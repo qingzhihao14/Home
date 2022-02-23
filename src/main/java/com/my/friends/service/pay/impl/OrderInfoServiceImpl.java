@@ -105,19 +105,19 @@ public class OrderInfoServiceImpl implements OrderInfoService {
      * @param orderNo
      * @param orderStatus
      */
-//    @Override
-//    public void updateStatusByOrderNo(String orderNo, OrderStatus orderStatus) {
-//
-//        log.info("更新订单状态 ===> {}", orderStatus.getType());
-//
+    @Override
+    public void updateStatusByOrderNo(String orderNo, OrderStatus orderStatus) {
+
+        log.info("更新订单状态 ===> {}", orderStatus.getType());
+
 //        QueryWrapper<OrdersInfo> queryWrapper = new QueryWrapper<>();
 //        queryWrapper.eq("order_no", orderNo);
 //
 //        OrdersInfo ordersInfo = new OrdersInfo();
 //        ordersInfo.setOrderStatus(orderStatus.getType());
-//
 //        baseMapper.update(ordersInfo, queryWrapper);
-//    }
+        sqlService.updateStatusByOrderNo(orderStatus.getType(),orderNo);
+    }
 
     /**
      * 根据订单号获取订单状态
@@ -161,15 +161,15 @@ public class OrderInfoServiceImpl implements OrderInfoService {
      * @param orderNo
      * @return
      */
-//    @Override
-//    public OrdersInfo getOrderByOrderNo(String orderNo) {
-//
+    @Override
+    public OrdersInfo getOrderByOrderNo(String orderNo) {
+
 //        QueryWrapper<OrdersInfo> queryWrapper = new QueryWrapper<>();
 //        queryWrapper.eq("order_no", orderNo);
 //        OrdersInfo ordersInfo = baseMapper.selectOne(queryWrapper);
-//
-//        return ordersInfo;
-//    }
+        OrdersInfo ordersInfo = sqlService.getOrdersByOrderNo(orderNo);
+        return ordersInfo;
+    }
 
 
     /**

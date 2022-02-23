@@ -82,9 +82,18 @@ public class ManagerController {
 
         return personService.selectLbXm(parent);
     }
+    /*
+     * 0.获取订单信息
+     * */
     @PostMapping(value="/findPage")
     public Result findPage(@RequestBody PageRequest pageRequest) {
         return Result.success(personService.findPage(pageRequest));
     }
-
+    /*
+     * 0.获取日志信息
+     * */
+    @PostMapping(value="/findLogPage")
+    public Result findLogPage(@RequestBody PageRequest pageRequest) {
+        return Result.success(personService.findLogPage(pageRequest));
+    }
 }
