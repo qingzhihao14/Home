@@ -639,19 +639,18 @@ public class PersonController {
     // 1.2 管理员创建和修改密码
     @ApiOperation(value = "管理员->创建和修改密码")
     @PostMapping("/insertOrUpdateAdmin")
-    public Result insertOrUpdateAdmin(
-            @ApiParam(value = "id(新增不传、更新传)",required = false,defaultValue = "") @RequestParam(required = false) String id,
-            @ApiParam(value = "用户代码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String code,
-            @ApiParam(value = "密码（必传）",required = false,defaultValue = "") @RequestParam(required = false) String psd,
-            @ApiParam(value = "姓名（必传）",required = false,defaultValue = "") @RequestParam(required = false) String name,
-            @ApiParam(value = "性别（男1，女0）",required = false,defaultValue = "1") @RequestParam(required = false) Integer sex){
+    public Result insertOrUpdateAdmin(@RequestBody(required = false) Map<String, String> params){
+        String id = params.get("id");
+        String code = params.get("code");
+        String psd = params.get("psd");
+        String name = params.get("name");
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"用户代码为空");
         }
         if(StringUtils.isNullOrEmpty(psd)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"密码为空");
         }
-        return personService.insertOrUpdateAdmin(id,code,psd,name,sex);
+        return personService.insertOrUpdateAdmin(id,code,psd,name,1);
     }
 
 }

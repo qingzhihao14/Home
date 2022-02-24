@@ -18,7 +18,7 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Value("${file.basepath}")
     private String baseAddress;
-    /**
+    /**X
      * 发现如果继承了WebMvcConfigurationSupport，则在yml中配置的相关内容会失效。 需要重新指定静态资源
      *
      * @param registry

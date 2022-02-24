@@ -745,6 +745,8 @@ public class PersonServiceImpl implements PersonService {
         Admin admin = admins.get(0);
         HashMap<String, Object> map = new HashMap<>();
         map.put("name",admin.getName());
+        map.put("username",admin.getCode());
+        map.put("userid",admin.getId());
         ArrayList<String> arrayList = new ArrayList<>();
         arrayList.add("admin");
         map.put("roles",arrayList);
