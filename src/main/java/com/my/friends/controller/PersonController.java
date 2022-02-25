@@ -90,7 +90,7 @@ public class PersonController {
                 if(strings.length<=0){
                     return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
                 }
-                User user = sqlService.getUser(strings[1]);
+                User user = sqlService.getUser(strings[0]);
                 return Result.success(user);
             }else{
                 return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
@@ -301,7 +301,9 @@ public class PersonController {
             if(result.getCode() != 0){
                 return result;
             }
-            usercode = (String) result.getData();
+//            usercode = (String) result.getData();
+              User user= (User) result.getData();
+              usercode =user.getCode();
         }
         Logss logss = new Logss();
         logss.setUserId(usercode);
@@ -353,6 +355,11 @@ public class PersonController {
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
+        String phone = remap.get("phone");
+        log.info("login获取手机号 =>"+phone);
+//        if(StringUtils.isNullOrEmpty(phone)){
+//            return Result.error(CodeMsg.PARAMETER_ISNULL,"phone");
+//        }
         JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
 
         JsCodeSession jsCodeSession =new JsCodeSession();
@@ -378,16 +385,18 @@ public class PersonController {
             session.setMaxInactiveInterval(30*60);
             session.setAttribute(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
             log.info("Session设置成功{key="+personalKey+",value="+session.getAttribute(personalKey));
-            redisTemplate.opsForValue().set(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
+//            redisTemplate.opsForValue().set(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(personalKey, phone+"，"+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
 
-            Logss logss = new Logss();
-            logss.setUserId(jsCodeSession.getOpenId());
-            logss.setUsername("");
-            logss.setUrlName("根据【微信code】登录【个人】");
-            logss.setUrl("/login");
-            remap.put("code",code);
-            logss.setParam(JSONUtil.toJsonStr(remap));
-            personService.insertLog(logss);
+//            Logss logss = new Logss();
+////            logss.setUserId(jsCodeSession.getOpenId());
+//            logss.setUserId(phone);
+//            logss.setUsername("");
+//            logss.setUrlName("根据【微信code】登录【个人】");
+//            logss.setUrl("/login");
+//            remap.put("code",code);
+//            logss.setParam(JSONUtil.toJsonStr(remap));
+//            personService.insertLog(logss);
 
             return Result.success(map);
         }else{
@@ -458,7 +467,9 @@ public class PersonController {
             if(result.getCode() != 0){
                 return result;
             }
-            code = (String) result.getData();
+//            code = (String) result.getData();
+            User user= (User) result.getData();
+            code =user.getCode();
         }
 
         Logss logss = new Logss();
@@ -542,7 +553,9 @@ public class PersonController {
             if(result.getCode() != 0){
                 return result;
             }
-            code = (String) result.getData();
+//            code = (String) result.getData();
+            User user= (User) result.getData();
+            code =user.getCode();
         }
 
         Logss logss = new Logss();
@@ -574,7 +587,9 @@ public class PersonController {
             if(result.getCode() != 0){
                 return result;
             }
-            code = (String) result.getData();
+//            code = (String) result.getData();
+            User user= (User) result.getData();
+            code =user.getCode();
         }
         if(StringUtils.isNullOrEmpty(address)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"地址为空");
