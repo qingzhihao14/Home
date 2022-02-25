@@ -560,17 +560,18 @@ public class PersonServiceImpl implements PersonService {
             UserExample example = new UserExample();
             example.createCriteria().andCodeEqualTo(code);
             ArrayList<User> users = userMapper.selectByExample(example);
+            log.info("再次登录，更新微信用户"+users);
             int count = 0;
             if (users.size() > 0) {
                 // 再次登录的用户
-                log.info("再次登录，更新微信用户");
                 User userz = users.get(0);
                 userz.setCode(user.getCode());
                 userz.setSex(user.getSex());
                 userz.setNote(user.getNote());
                 userz.setName(user.getName());
+                log.info("再次登录，更新微信用户"+userz);
                 // 编辑
-                count = userMapper.updateByPrimaryKey(userz);
+                count = userMapper.updateByPrimaryKeySelective(userz);
                 if(count>0){
                     return Result.success();
                 }else{

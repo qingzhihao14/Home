@@ -81,16 +81,17 @@ public class PersonController {
     public Result getOpenId(HttpServletRequest request){
 
         String token = request.getHeader("token");
-        log.info("saveLoginInfo获取header_token="+token);
+        log.info("getOpenId获取header_token="+token);
         if(!StringUtils.isNullOrEmpty(token)){
             String cookiez = redisTemplate.opsForValue().get(token);
-            log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
+            log.info("getOpenId_通过redis获取到的session值="+cookiez);
             if(!StringUtils.isNullOrEmpty(cookiez)){
                 String[] strings = cookiez.split("，");
                 if(strings.length<=0){
                     return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
                 }
-                User user = sqlService.getUser(strings[0]);
+                User user = sqlService.getUser(strings[1]);
+                log.info("getOpenId_获取到的用户="+user);
                 return Result.success(user);
             }else{
                 return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
@@ -279,54 +280,52 @@ public class PersonController {
      * note 备注
      * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    @ApiOperation(value = "下单【个人】")
-    @RequestMapping(value = "/order", method = {RequestMethod.GET})
-    public Result order(
-            @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
-            @ApiParam(value = "订单编码",required = false,defaultValue = "")  @RequestParam(required = false) String orderno,
-            @ApiParam(value = "支付金额",required = false,defaultValue = "0")  @RequestParam(required = false) Integer pay,
-            @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "0")  @RequestParam(required = false) String addressid,
-            @ApiParam(value = "地址",required = false,defaultValue = "")  @RequestParam(required = false) String address,
-            @ApiParam(value = "手机号",required = false,defaultValue = "")  @RequestParam(required = false) String phone,
-            @ApiParam(value = "姓名",required = false,defaultValue = "")  @RequestParam(required = false) String name,
-            @ApiParam(value = "服务时间",required = false,defaultValue = "")  @RequestParam(required = false) String servicetime,
-            @ApiParam(value = "优惠券",required = false,defaultValue = "")  @RequestParam(required = false) String coupon,
-            @ApiParam(value = "备注",required = false,defaultValue = "")  @RequestParam(required = false) String note,
-    @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
-            HttpServletRequest request){
-        String way = request.getParameter("way");
-        String usercode = "";
-        if(!"all".equals(way)){
-            Result result = getOpenId(request);
-            if(result.getCode() != 0){
-                return result;
-            }
+//    @ApiOperation(value = "下单【个人】")
+//    @RequestMapping(value = "/order", method = {RequestMethod.GET})
+//    public Result order(
+//            @ApiParam(value = "项目代码",required = false,defaultValue = "")  @RequestParam(required = false) String code,
+//            @ApiParam(value = "订单编码",required = false,defaultValue = "")  @RequestParam(required = false) String orderno,
+//            @ApiParam(value = "支付金额",required = false,defaultValue = "0")  @RequestParam(required = false) Integer pay,
+//            @ApiParam(value = "地址id(新增不传、更新传)",required = false,defaultValue = "0")  @RequestParam(required = false) String addressid,
+//            @ApiParam(value = "地址",required = false,defaultValue = "")  @RequestParam(required = false) String address,
+//            @ApiParam(value = "手机号",required = false,defaultValue = "")  @RequestParam(required = false) String phone,
+//            @ApiParam(value = "姓名",required = false,defaultValue = "")  @RequestParam(required = false) String name,
+//            @ApiParam(value = "服务时间",required = false,defaultValue = "")  @RequestParam(required = false) String servicetime,
+//            @ApiParam(value = "优惠券",required = false,defaultValue = "")  @RequestParam(required = false) String coupon,
+//            @ApiParam(value = "备注",required = false,defaultValue = "")  @RequestParam(required = false) String note,
+//    @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
+//            HttpServletRequest request){
+//        String way = request.getParameter("way");
+//        String usercode = "";
+//        if(!"all".equals(way)){
+//            Result result = getOpenId(request);
+//            if(result.getCode() != 0){
+//                return result;
+//            }
 //            usercode = (String) result.getData();
-              User user= (User) result.getData();
-              usercode =user.getCode();
-        }
-        Logss logss = new Logss();
-        logss.setUserId(usercode);
-        logss.setUsername("**下单");
-        logss.setUrlName("下单【个人】");
-        logss.setUrl("/order");
-        HashMap<Object, Object> reqMap = new HashMap<>();
-        reqMap.put("usercode",usercode);
-        reqMap.put("code",code);
-        reqMap.put("orderno",orderno);
-        reqMap.put("pay",pay);
-        reqMap.put("addressid",addressid);
-        reqMap.put("address",address);
-        reqMap.put("phone",phone);
-        reqMap.put("name",name);
-        reqMap.put("servicetime",servicetime);
-        reqMap.put("coupon",coupon);
-        reqMap.put("note",note);
-        reqMap.put("files",files);
-        logss.setParam(JSONUtil.toJsonStr(reqMap));
-        personService.insertLog(logss);
-        return personService.order( usercode,  code,  orderno,  pay, addressid,  address, phone, name,  servicetime,  coupon,  note, files);
-    }
+//        }
+//        Logss logss = new Logss();
+//        logss.setUserId(usercode);
+//        logss.setUsername("**下单");
+//        logss.setUrlName("下单【个人】");
+//        logss.setUrl("/order");
+//        HashMap<Object, Object> reqMap = new HashMap<>();
+//        reqMap.put("usercode",usercode);
+//        reqMap.put("code",code);
+//        reqMap.put("orderno",orderno);
+//        reqMap.put("pay",pay);
+//        reqMap.put("addressid",addressid);
+//        reqMap.put("address",address);
+//        reqMap.put("phone",phone);
+//        reqMap.put("name",name);
+//        reqMap.put("servicetime",servicetime);
+//        reqMap.put("coupon",coupon);
+//        reqMap.put("note",note);
+//        reqMap.put("files",files);
+//        logss.setParam(JSONUtil.toJsonStr(reqMap));
+//        personService.insertLog(logss);
+//        return personService.order( usercode,  code,  orderno,  pay, addressid,  address, phone, name,  servicetime,  coupon,  note, files);
+//    }
 
 
 
@@ -355,11 +354,6 @@ public class PersonController {
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
-        String phone = remap.get("phone");
-        log.info("login获取手机号 =>"+phone);
-//        if(StringUtils.isNullOrEmpty(phone)){
-//            return Result.error(CodeMsg.PARAMETER_ISNULL,"phone");
-//        }
         JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
 
         JsCodeSession jsCodeSession =new JsCodeSession();
@@ -376,7 +370,7 @@ public class PersonController {
             String personalKey = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
 
             HashMap<String, String> map = new HashMap<>();
-            map.put("cookie",personalKey);
+            map.put("cookie",personalKey+"new");
             map.put("openid",jsCodeSession.getOpenId());
             map.put("sessionkey",jsCodeSession.getSession_key());
             log.info("设置Session{key="+personalKey+",value="+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
@@ -385,8 +379,7 @@ public class PersonController {
             session.setMaxInactiveInterval(30*60);
             session.setAttribute(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
             log.info("Session设置成功{key="+personalKey+",value="+session.getAttribute(personalKey));
-//            redisTemplate.opsForValue().set(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
-            redisTemplate.opsForValue().set(personalKey, phone+"，"+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(personalKey, jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key(), 7200, TimeUnit.SECONDS);
 
 //            Logss logss = new Logss();
 ////            logss.setUserId(jsCodeSession.getOpenId());
@@ -412,21 +405,44 @@ public class PersonController {
         User user = new User();
         String token = request.getHeader("token");
         log.info("saveLoginInfo获取header_token="+token);
-        if(!StringUtils.isNullOrEmpty(token)){
-            String cookiez = redisTemplate.opsForValue().get(token);
-            log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
-            if(!StringUtils.isNullOrEmpty(cookiez)){
-                String[] strings = cookiez.split("，");
-                if(strings.length<=0){
+        String phone = remap.get("phone");
+        if(!StringUtils.isNullOrEmpty(remap.get("phone"))){
+            openid = phone;
+            if(!StringUtils.isNullOrEmpty(token)){
+                String[] news = token.split("new");
+                String cookiez = redisTemplate.opsForValue().get(news[0]);
+                log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
+                if(!StringUtils.isNullOrEmpty(cookiez)){
+                    String[] strings = cookiez.split("，");
+                    if(strings.length<=0){
+                        return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+                    }
+                    log.info("saveLoginInfo_重新设置redis的session值="+strings[0]+","+ phone +"，"+strings[1]);
+                    redisTemplate.opsForValue().set(token, strings[0]+"，"+ phone +"，"+strings[1], 7200, TimeUnit.SECONDS);
+                }else{
                     return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
                 }
-                openid = strings[1];
             }else{
                 return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
             }
         }else{
-            return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"手机号为空");
         }
+//        if(!StringUtils.isNullOrEmpty(token)){
+//            String cookiez = redisTemplate.opsForValue().get(token);
+//            log.info("saveLoginInfo_通过redis获取到的session值="+cookiez);
+//            if(!StringUtils.isNullOrEmpty(cookiez)){
+//                String[] strings = cookiez.split("，");
+//                if(strings.length<=0){
+//                    return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+//                }
+////                openid = strings[1];
+//            }else{
+//                return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+//            }
+//        }else{
+//            return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
+//        }
         user.setCode(openid);
         if(!StringUtils.isNullOrEmpty(remap.get("gender"))){
             Integer gender = Integer.parseInt(remap.get("gender"));
@@ -462,19 +478,21 @@ public class PersonController {
     public Result getLoginInfo(HttpServletRequest request){
         String way = request.getParameter("way");
         String code = "";
+        User user = new User();
         if(!"all".equals(way)){
             Result result = getOpenId(request);
             if(result.getCode() != 0){
                 return result;
             }
 //            code = (String) result.getData();
-            User user= (User) result.getData();
-            code =user.getCode();
+            user = (User) result.getData();
+            code = user.getCode();
+            log.info("getLoginInfo获取User"+user);
         }
 
         Logss logss = new Logss();
         logss.setUserId(code);
-        logss.setUsername("");
+        logss.setUsername(user.getName());
         logss.setUrlName("获取微信登录信息【个人】");
         logss.setUrl("/getLoginInfo");
         HashMap<Object, Object> remap = new HashMap<>();
@@ -548,19 +566,20 @@ public class PersonController {
             HttpServletRequest request){
         String way = request.getParameter("way");
         String code = "";
+        User user = new User();
         if(!"all".equals(way)){
             Result result = getOpenId(request);
             if(result.getCode() != 0){
                 return result;
             }
 //            code = (String) result.getData();
-            User user= (User) result.getData();
-            code =user.getCode();
+            user = (User) result.getData();
+            code = user.getCode();
         }
 
         Logss logss = new Logss();
         logss.setUserId(code);
-        logss.setUsername("");
+        logss.setUsername(user.getName());
         logss.setUrlName("查询订单【个人】");
         logss.setUrl("/getLoginInfo");
         HashMap<Object, Object> remap = new HashMap<>();
@@ -582,14 +601,15 @@ public class PersonController {
             HttpServletRequest request){
         String way = request.getParameter("way");
         String code = "";
+        User user = new User();
         if(!"all".equals(way)){
             Result result = getOpenId(request);
             if(result.getCode() != 0){
                 return result;
             }
 //            code = (String) result.getData();
-            User user= (User) result.getData();
-            code =user.getCode();
+            user = (User) result.getData();
+            code = user.getCode();
         }
         if(StringUtils.isNullOrEmpty(address)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"地址为空");
@@ -603,7 +623,7 @@ public class PersonController {
 
         Logss logss = new Logss();
         logss.setUserId(code);
-        logss.setUsername("");
+        logss.setUsername(user.getName());
         logss.setUrlName("查询订单【个人】");
         logss.setUrl("/getLoginInfo");
         HashMap<Object, Object> remap = new HashMap<>();
