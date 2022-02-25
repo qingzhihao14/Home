@@ -129,17 +129,19 @@ public class PayController {
         String coupon = remap.get("coupon");
         String note = remap.get("note");
 
+        Result result = getLoginUser(request);
+        if(result.getCode() != 0){
+            return result;
+        }
+        User user = (User) result.getData();
+        //测试
+//        User user = new User();
+//        user.setId("f1b90f0a726a44c3a0483c6e975a49b3");
+//        user.setCode("2eBH3z8B9XuKCzONuliFSQ==");
+//        user.setName("Mercedes⁰");
+//        user.setNote("https://thirdwx.qlogo.cn/mmopen/vi_32/EyiavrAbAbbv4MQCONoI5pgiaLiaEuqRFianyYbbAic0Idiaibd9EJjlSzMVtFRj1reaMI6VB0OVT9KZVSicaGtjXdPZow/132");
+
         // 记录日志
-//        Result result = getLoginUser(request);
-//        if(result.getCode() != 0){
-//            return result;
-//        }
-//        User user = (User) result.getData();
-        User user = new User();
-        user.setId("f1b90f0a726a44c3a0483c6e975a49b3");
-        user.setCode("2eBH3z8B9XuKCzONuliFSQ==");
-        user.setName("Mercedes⁰");
-        user.setNote("https://thirdwx.qlogo.cn/mmopen/vi_32/EyiavrAbAbbv4MQCONoI5pgiaLiaEuqRFianyYbbAic0Idiaibd9EJjlSzMVtFRj1reaMI6VB0OVT9KZVSicaGtjXdPZow/132");
         String param = JSONUtil.toJsonStr(remap);
         personService.insertLog(new Logss( user.getCode(),  user.getName(),  "下单【个人】",  "/order",  param));
 
@@ -156,20 +158,20 @@ public class PayController {
         String way = request.getParameter("way");
         String code = "";
         User user = new User();
-//        if(!"all".equals(way)){
-//            Result result = getLoginUser(request);
-//            if(result.getCode() != 0){
-//                return result;
-//            }
-//            user = (User) result.getData();
-//            code = user.getCode();
-//        }
-//        HashMap<Object, Object> remap = new HashMap<>();
-//        remap.put("userCode",code);
-//        String param = JSONUtil.toJsonStr(remap);
-//        personService.insertLog(new Logss( user.getCode(),  user.getName(),  "查询订单【个人】",  "/getOrder",  param));
+        if(!"all".equals(way)){
+            Result result = getLoginUser(request);
+            if(result.getCode() != 0){
+                return result;
+            }
+            user = (User) result.getData();
+            code = user.getCode();
+        }
+        HashMap<Object, Object> remap = new HashMap<>();
+        remap.put("userCode",code);
+        String param = JSONUtil.toJsonStr(remap);
+        personService.insertLog(new Logss( user.getCode(),  user.getName(),  "查询订单【个人】",  "/getOrder",  param));
 
-        code = "A9UJ96+nXmI35xuI9N52AA==";
+//        code = "A9UJ96+nXmI35xuI9N52AA==";
         return payService.getOrder(code);
     }
 
@@ -246,7 +248,7 @@ public class PayController {
             return Result.success("支付成功"); //支付成功
         }
 
-        return Result.error(CodeMsg.PAY_FAILED,"支付中...");
+        return Result.error(CodeMsg.PAY_FAILED,orderStatus);
     }
 
     /**
