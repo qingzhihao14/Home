@@ -5,6 +5,7 @@ import com.my.friends.dao.*;
 import com.my.friends.mapper.SqlService;
 import com.my.friends.service.CommandService;
 import com.my.friends.service.PersonService;
+import com.my.friends.service.pay.WxPayService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.Result;
 import com.my.friends.utils.pay.JsCodeSession;
@@ -351,9 +352,14 @@ public class PersonController {
 
 
         String code = remap.get("code");
+
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
+
+
+        String phone = WeiXinUtil.getPhone(code);
+        log.info("调取微信接口获取到的phone="+phone);
         JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
 
         JsCodeSession jsCodeSession =new JsCodeSession();

@@ -27,7 +27,7 @@ public interface WxPayService {
     * note 备注
     * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    Result nativePay(User user, String code,String count,String pay,String addressid,String servicetime,String coupon,String note, MultipartFile[] files) throws IOException;
+    Result nativePay(User user, String code,String count,String pay,String detailInfo,String telNumber,String userName,String servicetime,String coupon,String note, MultipartFile[] files) throws Exception;
     // 下单-图片上传
     Result nativePayPicUploads(String orderno, MultipartFile[] files);
 

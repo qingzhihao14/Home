@@ -89,7 +89,13 @@ public class ManagerController {
     public Result findPage(@RequestBody PageRequest pageRequest) {
         return Result.success(personService.findPage(pageRequest));
     }
-
+    /*
+     * 01.获取用户
+     * */
+    @PostMapping(value="/findUsersPage")
+    public Result findUsersPage(@RequestBody PageRequest pageRequest) {
+        return Result.success(personService.findUsersPage(pageRequest));
+    }
     /*
      * 0.获取订单信息
      * */

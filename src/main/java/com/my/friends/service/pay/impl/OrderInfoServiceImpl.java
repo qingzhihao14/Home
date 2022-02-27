@@ -2,15 +2,15 @@ package com.my.friends.service.pay.impl;
 
 import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.my.friends.dao.LbItem;
-import com.my.friends.dao.OrdersInfo;
-import com.my.friends.dao.OrdersInfoExample;
-import com.my.friends.dao.User;
+import com.my.friends.dao.*;
+import com.my.friends.mapper.AddressMapper;
 import com.my.friends.mapper.OrdersInfoMapper;
 import com.my.friends.mapper.SqlService;
 import com.my.friends.pay.paymentdemo.enums.OrderStatus;
 import com.my.friends.pay.paymentdemo.util.OrderNoUtils;
 import com.my.friends.service.pay.OrderInfoService;
+import com.my.friends.utils.CodeMsg;
+import com.my.friends.utils.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +32,22 @@ public class OrderInfoServiceImpl implements OrderInfoService {
     @Resource
     OrdersInfoMapper ordersInfoMapper;
 
+    @Resource
+    AddressMapper addressMapper;
+
+    @Override
+    public String createAddressByAddressId(String detailInfo,String telNumber,String userName) {
+
+        Address address = new Address();
+        String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+        address.setId(uuid);
+        address.setCode(uuid);
+        address.setAddress(detailInfo);
+        address.setPhone(telNumber);
+        address.setName(userName);
+        addressMapper.insert(address);
+        return uuid;
+    }
     @Override
     public OrdersInfo createOrderByProductId(User user,String productId,String count,String pay,String addressid,String servicetime,String coupon,String note) {
 
@@ -151,8 +167,15 @@ public class OrderInfoServiceImpl implements OrderInfoService {
 //        queryWrapper.le("create_time", instant);
 //
 //        List<OrdersInfo> orderInfoList = baseMapper.selectList(queryWrapper);
+        Date date = Date.from(instant);
+        OrdersInfoExample ordersInfoExample = new OrdersInfoExample();
+        ordersInfoExample.createCriteria()
+                .andOrderStatusEqualTo(OrderStatus.NOTPAY.getType())
+                .andCreateTimeLessThanOrEqualTo(date);
+        List<OrdersInfo> orderInfoList = ordersInfoMapper.selectByExample(ordersInfoExample);
         log.info("==========OrdersInfo========"+instant);
-        List<OrdersInfo> orderInfoList = sqlService.getOrderbyOrderAndLessThanCreateTimeFiveMins(OrderStatus.NOTPAY.getType(),instant);
+        log.info("==========OrdersInfo========"+orderInfoList);
+//        List<OrdersInfo> orderInfoList = sqlService.getOrderbyOrderAndLessThanCreateTimeFiveMins(OrderStatus.NOTPAY.getType(),instant);
         return orderInfoList;
     }
 

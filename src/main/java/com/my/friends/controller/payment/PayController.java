@@ -19,8 +19,10 @@ import io.swagger.annotations.*;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -102,8 +104,11 @@ public class PayController {
     @RequestMapping(value = "/payone", method = {RequestMethod.POST, RequestMethod.GET})
     public Result order( @RequestParam Map<String,String> remap,
                          @ApiParam(value = "图片上传",required = false,defaultValue = "")  @RequestParam(value = "file",required = false) MultipartFile[] files,
-                         HttpServletRequest request) throws IOException {
-
+                         HttpServletRequest request) throws Exception {
+//        log.info("测试下单上传图片");
+//        StandardMultipartHttpServletRequest tempFile = (StandardMultipartHttpServletRequest) request;
+//        MultiValueMap<String, MultipartFile> multiFileMap = tempFile.getMultiFileMap();
+//        log.info("图片"+multiFileMap);
         // 处理参数
         String code =  remap.get("code"); //商品code
         if(StringUtils.isNullOrEmpty(code)){
@@ -117,9 +122,22 @@ public class PayController {
         if(StringUtils.isNullOrEmpty(pay)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品pay为空");
         }
-        String addressid = remap.get("addressid");
-        if(StringUtils.isNullOrEmpty(addressid)){
-            return Result.error(CodeMsg.PARAMETER_ISNULL,"商品addressid为空");
+//        String addressid = remap.get("addressid");
+//        if(StringUtils.isNullOrEmpty(addressid)){
+//            return Result.error(CodeMsg.PARAMETER_ISNULL,"商品addressid为空");
+//        }
+//        替换为 String detailInfo,String telNumber,String userName
+        String detailInfo = remap.get("detailInfo");
+        if(StringUtils.isNullOrEmpty(detailInfo)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"商品detailInfo为空");
+        }
+        String telNumber = remap.get("telNumber");
+        if(StringUtils.isNullOrEmpty(telNumber)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"商品telNumber为空");
+        }
+        String userName = remap.get("userName");
+        if(StringUtils.isNullOrEmpty(userName)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"商品userName为空");
         }
         String servicetime = remap.get("servicetime");
         if(StringUtils.isNullOrEmpty(servicetime)){
@@ -145,7 +163,7 @@ public class PayController {
         String param = JSONUtil.toJsonStr(remap);
         personService.insertLog(new Logss( user.getCode(),  user.getName(),  "下单【个人】",  "/order",  param));
 
-        return payService.nativePay(user, code,count,pay,addressid,servicetime,coupon,note,files);
+        return payService.nativePay(user, code,count,pay,detailInfo, telNumber, userName,servicetime,coupon,note,files);
     }
 
 

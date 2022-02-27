@@ -20,6 +20,7 @@ import com.my.friends.service.pay.WxPayService;
 import com.my.friends.utils.CodeMsg;
 import com.my.friends.utils.JwtUtils;
 import com.my.friends.utils.Result;
+import com.my.friends.utils.pay.QRCodeUtil;
 import com.wechat.pay.contrib.apache.httpclient.util.AesUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -85,6 +86,9 @@ public class WxPayServiceImpl implements WxPayService {
     @Resource
     RefundsInfoMapper refundsInfoMapper;
 
+    @Resource
+    AddressMapper addressMapper;
+
     private final ReentrantLock lock = new ReentrantLock();
 
     /*
@@ -103,6 +107,7 @@ public class WxPayServiceImpl implements WxPayService {
             String file_name = "home_" + id + '.' + FileUtil.getSuffix(original_name);
             String path = (File.separator + file_name).replaceAll("\\\\", "/");
             String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
+            log.info("picture==newfilePath="+newfilePath);
             Picture picture = new Picture();
             picture.setId(id);
             picture.setOrderno(orderno);
@@ -124,6 +129,7 @@ public class WxPayServiceImpl implements WxPayService {
                 }
                 mf.transferTo(uploadFile);
                 pictureList.add(picture);
+                log.info("picture==="+picture);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -131,6 +137,7 @@ public class WxPayServiceImpl implements WxPayService {
                 return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
             }
         }
+
         if(pictureList.size()>0){
             pictureList.forEach(picture -> {
                 pictureMapper.insert(picture);
@@ -150,18 +157,22 @@ public class WxPayServiceImpl implements WxPayService {
                             String productId,
                             String count,
                             String pay,
-                            String addressid,
+//                            String addressid,
+                            String detailInfo,String telNumber,String userName,
                             String servicetime,
                             String coupon,
                             String note,
-                            MultipartFile[] files) throws IOException {
+                            MultipartFile[] files) throws Exception {
 
         log.info("生成订单");
-
+        //生成地址信息
+//        OrdersInfo ordersInfo = orderInfoService.createOrderByProductId(user, productId,count,pay,addressid,servicetime,coupon,note);
+        String addressByAddressId = orderInfoService.createAddressByAddressId( detailInfo, telNumber, userName);
         //生成订单
-        OrdersInfo ordersInfo = orderInfoService.createOrderByProductId(user, productId,count,pay,addressid,servicetime,coupon,note);
-
+        OrdersInfo ordersInfo = orderInfoService.createOrderByProductId(user, productId,count,pay,addressByAddressId,servicetime,coupon,note);
+        log.info("开始上传图片===");
         if(files!=null && files.length > 0){
+            log.info("有"+files.length+"个图片上传===");
             // 上传图片
             Result result = nativePayPicUploads(ordersInfo.getOrderNo(), files);
             if(result.getCode() != 0){
@@ -220,14 +231,14 @@ public class WxPayServiceImpl implements WxPayService {
             } else if (statusCode == 204) { //处理成功，无返回Body
                 log.info("成功");
             }
-//            else {
-//                log.info("Native下单失败,响应码 = " + statusCode+ ",返回结果 = " + bodyAsString);
-//                return Result.success(bodyAsString);
+            else {
+                log.info("Native下单失败,响应码 = " + statusCode+ ",返回结果 = " + bodyAsString);
+                return Result.success(bodyAsString);
 //                throw new IOException("request failed");
-//
-//            }
+
+            }
             if(statusCode != 200 && statusCode != 204){
-//                log.info("Native下单失败,响应码 = " + statusCode+ ",返回结果 = " + bodyAsString);
+                log.info("Native下单失败,响应码 = " + statusCode+ ",返回结果 = " + bodyAsString);
                 return Result.success(bodyAsString);
             }
 
@@ -235,13 +246,19 @@ public class WxPayServiceImpl implements WxPayService {
             Map<String, String> resultMap = gson.fromJson(bodyAsString, HashMap.class);
             //二维码
             codeUrl = resultMap.get("code_url");
-
+            // 链接生成二维码
+            String filename = QRCodeUtil.encode(codeUrl, "", baseAddress);
             //保存二维码
             String orderNo = ordersInfo.getOrderNo();
-            orderInfoService.saveCodeUrl(orderNo, codeUrl);
+//            orderInfoService.saveCodeUrl(orderNo, codeUrl);
+            orderInfoService.saveCodeUrl(orderNo, filename);
+
+
+
             //返回二维码
             Map<String, Object> map = new HashMap<>();
             map.put("codeUrl", codeUrl);
+            map.put("codeurl", filename);
             map.put("orderNo", ordersInfo.getOrderNo());
             return Result.success(map);
 
@@ -254,7 +271,8 @@ public class WxPayServiceImpl implements WxPayService {
 
     @Override
     public Result getOrder(String usercode) {
-        ArrayList<OrdersInfo> OrdersInfos = sqlService.getOrdersInfoByUsercode(usercode);
+        ArrayList<AllOrdersInfo> OrdersInfos = sqlService.getOrdersInfoByUsercode(usercode);
+//        ArrayList<OrdersInfo> OrdersInfos = sqlService.getOrdersInfoByUsercode(usercode);
         if(OrdersInfos.size()>0){
             return Result.success(OrdersInfos);
         }else{
@@ -513,12 +531,26 @@ public class WxPayServiceImpl implements WxPayService {
             log.warn("核实订单未支付 ===> {}"+ orderNo);
 
             //如果订单未支付，则调用关单接口
+//            this.closeOrder(orderNo);
+
+            //更新本地订单状态
+//            orderInfoService.updateStatusByOrderNo(orderNo, OrderStatus.CLOSED);
+//            sqlService.updateStatusByOrderNo(OrderStatus.CLOSED.getType(),orderNo);
+            sqlService.updateStatusByOrderNo(OrderStatus.NOTPAY.getType(),orderNo);
+        }
+
+        if(WxTradeState.CLOSED.getType().equals(tradeState)){
+            log.warn("核实订单已关闭 ===> {}"+ orderNo);
+
+            //如果订单未支付，则调用关单接口
             this.closeOrder(orderNo);
 
             //更新本地订单状态
 //            orderInfoService.updateStatusByOrderNo(orderNo, OrderStatus.CLOSED);
+//            sqlService.updateStatusByOrderNo(OrderStatus.CLOSED.getType(),orderNo);
             sqlService.updateStatusByOrderNo(OrderStatus.CLOSED.getType(),orderNo);
         }
+
 
     }
 
@@ -537,8 +569,16 @@ public class WxPayServiceImpl implements WxPayService {
 //        queryWrapper.eq("refund_status", WxRefundStatus.PROCESSING.getType());
 //        queryWrapper.le("create_time", instant);
 //        List<RefundsInfo> refundInfoList = baseMapper.selectList(queryWrapper);
+
+        Date date = Date.from(instant);
+        RefundsInfoExample example = new RefundsInfoExample();
+        example.createCriteria()
+                .andRefundStatusEqualTo(WxRefundStatus.PROCESSING.getType())
+                .andCreateTimeLessThanOrEqualTo(date);
+        List<RefundsInfo> refundInfoList = refundsInfoMapper.selectByExample(example);
         log.info("==========RefundsInfo========"+instant);
-        List<RefundsInfo> refundInfoList = sqlService.getRefundsInfobyOrderAndLessThanCreateTimeFiveMins(WxRefundStatus.PROCESSING.getType(),instant);
+        log.info("==========RefundsInfo========"+refundInfoList);
+//        List<RefundsInfo> refundInfoList = sqlService.getRefundsInfobyOrderAndLessThanCreateTimeFiveMins(WxRefundStatus.PROCESSING.getType(),instant);
         return refundInfoList;
     }
 

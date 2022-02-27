@@ -1,5 +1,6 @@
 package com.my.friends.mapper;
 
+import com.my.friends.dao.OrdersInfo;
 import com.my.friends.dao.User;
 import com.my.friends.dao.UserExample;
 
@@ -29,4 +30,11 @@ public interface UserMapper {
     int updateByPrimaryKeySelective(User record);
 
     int updateByPrimaryKey(User record);
+
+
+    /**
+     * 分页查询用户
+     * @return
+     */
+    List<User> selectUsersInfoPage();
 }

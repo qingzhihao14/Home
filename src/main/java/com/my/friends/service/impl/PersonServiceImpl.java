@@ -797,43 +797,50 @@ public class PersonServiceImpl implements PersonService {
 //        PageRequest pageRequest = new PageRequest();
         String searchParam = pageRequest.getSearchParam();
         PageResult result = PageUtils.getPageResult(pageRequest, getPageInfo(pageRequest));
-        Stream<AllOrdersInfo> mapStream = result.getContent().stream().map(ordersInfo -> {
-                    AllOrdersInfo allOrdersInfo = new AllOrdersInfo();
-                    BeanUtil.copyProperties(ordersInfo, allOrdersInfo);
-                    String userId = allOrdersInfo.getUserId();
-                    String addressno = allOrdersInfo.getAddressno();
-                    User user = sqlService.getUser(userId);
-                    Address address = sqlService.getAddress(addressno);
-                    if (!ObjectUtils.isEmpty(address)) {
-                        allOrdersInfo.setName(address.getName());
-                        allOrdersInfo.setAddress(address.getAddress());
-                        allOrdersInfo.setPhone(address.getPhone());
-                    } else {
-                        allOrdersInfo.setName("");
-                        allOrdersInfo.setAddress("");
-                        allOrdersInfo.setPhone("");
-                    };
-                    allOrdersInfo.setUsername(user.getName());
-                    allOrdersInfo.setAvatar(user.getNote());
-                    allOrdersInfo.setSex(user.getSex());
-                    return allOrdersInfo;
-                });
         List<Object> lis = new ArrayList<>();
-        Stream<AllOrdersInfo> allOrdersInfoStream = null;
         if(!StringUtils.isNullOrEmpty(searchParam)){
-            allOrdersInfoStream = mapStream
-//                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam));
-//                    .filter(allOrdersInfo -> allOrdersInfo.getOrderNo().contains(searchParam))
-//                    .filter(allOrdersInfo -> allOrdersInfo.getTitle().contains(searchParam))
-//                    .filter(allOrdersInfo -> allOrdersInfo.getAddress().contains(searchParam))
-                    .filter(allOrdersInfo -> allOrdersInfo.getPhone().contains(searchParam));
-//                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam))
+            Stream<AllOrdersInfo> stream = (Stream<AllOrdersInfo>)result.getContent().stream();
 
-            lis = allOrdersInfoStream.collect(Collectors.toList());
-        }else{
-            lis = mapStream.collect(Collectors.toList());
+            lis = stream.filter(allOrdersInfo -> allOrdersInfo.getAddPhone().contains(searchParam)).collect(Collectors.toList());
+            result.setContent(lis);
         }
-        result.setContent(lis);
+//        Stream<AllOrdersInfo> mapStream = result.getContent().stream().map(ordersInfo -> {
+//                    AllOrdersInfo allOrdersInfo = new AllOrdersInfo();
+//                    BeanUtil.copyProperties(ordersInfo, allOrdersInfo);
+//                    String userId = allOrdersInfo.getUserId();
+//                    String addressno = allOrdersInfo.getAddressno();
+//                    User user = sqlService.getUser(userId);
+//                    Address address = sqlService.getAddress(addressno);
+//                    if (!ObjectUtils.isEmpty(address)) {
+//                        allOrdersInfo.setName(address.getName());
+//                        allOrdersInfo.setAddress(address.getAddress());
+//                        allOrdersInfo.setPhone(address.getPhone());
+//                    } else {
+//                        allOrdersInfo.setName("");
+//                        allOrdersInfo.setAddress("");
+//                        allOrdersInfo.setPhone("");
+//                    };
+//                    allOrdersInfo.setUsername(user.getName());
+//                    allOrdersInfo.setAvatar(user.getNote());
+//                    allOrdersInfo.setSex(user.getSex());
+//                    return allOrdersInfo;
+//                });
+//        List<Object> lis = new ArrayList<>();
+//        Stream<AllOrdersInfo> allOrdersInfoStream = null;
+//        if(!StringUtils.isNullOrEmpty(searchParam)){
+//            allOrdersInfoStream = mapStream
+////                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam));
+////                    .filter(allOrdersInfo -> allOrdersInfo.getOrderNo().contains(searchParam))
+////                    .filter(allOrdersInfo -> allOrdersInfo.getTitle().contains(searchParam))
+////                    .filter(allOrdersInfo -> allOrdersInfo.getAddress().contains(searchParam))
+//                    .filter(allOrdersInfo -> allOrdersInfo.getPhone().contains(searchParam));
+////                    .filter(allOrdersInfo -> allOrdersInfo.getName().contains(searchParam))
+//
+//            lis = allOrdersInfoStream.collect(Collectors.toList());
+//        }else{
+//            lis = mapStream.collect(Collectors.toList());
+//        }
+//        result.setContent(lis);
         return result;
     }
 
@@ -843,12 +850,39 @@ public class PersonServiceImpl implements PersonService {
      * @param pageRequest
      * @return
      */
-    private PageInfo<OrdersInfo> getPageInfo(PageRequest pageRequest) {
+    private PageInfo<AllOrdersInfo> getPageInfo(PageRequest pageRequest) {
         int pageNum = pageRequest.getPageNum();
         int pageSize = pageRequest.getPageSize();
         PageHelper.startPage(pageNum, pageSize);
-        List<OrdersInfo> sysMenus = ordersInfoMapper.selectOrdersInfoPage();
-        return new PageInfo<OrdersInfo>(sysMenus);
+//        List<OrdersInfo> sysMenus = ordersInfoMapper.selectOrdersInfoPage();
+        List<AllOrdersInfo> sysMenus = sqlService.getAllOrdersInfoByUsercode();
+        return new PageInfo<AllOrdersInfo>(sysMenus);
+    }
+
+    @Override
+    public PageResult findUsersPage(PageRequest pageRequest) {
+        List<User> lis = new ArrayList<>();
+        String searchParam = pageRequest.getSearchParam();
+        PageResult result = PageUtils.getPageResult(pageRequest, getUsersPageInfo(pageRequest));
+        if(!StringUtils.isNullOrEmpty(searchParam)){
+            lis = (List<User>) result.getContent().stream().filter(user -> ((User) user).getCode().contains(searchParam)).collect(Collectors.toList());
+            result.setContent(lis);
+        }
+        return result;
+    }
+
+
+    /**
+     * 调用分页插件完成分页
+     * @param pageRequest
+     * @return
+     */
+    private PageInfo<User> getUsersPageInfo(PageRequest pageRequest) {
+        int pageNum = pageRequest.getPageNum();
+        int pageSize = pageRequest.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+        List<User> sysMenus = userMapper.selectUsersInfoPage();
+        return new PageInfo<User>(sysMenus);
     }
 
     @Override

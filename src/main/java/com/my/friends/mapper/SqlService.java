@@ -61,11 +61,80 @@ public interface SqlService {
     *
     *   根据订单号查询个人订单
     * */
-    @Select("SELECT *  " +
-            " FROM  t_orders_info " +
-            " where user_id=#{user_id} order by update_time desc ")
-    ArrayList<OrdersInfo> getOrdersInfoByUsercode(@Param("user_id") String user_id);
+    @Select("SELECT   "
+            + "a.id, " +
+            "a.user_id, " +
+            "a.product_id, " +
+            "a.order_no, " +
+            "a.order_status, " +
+            "a.total_fee, " +
+            "a.title, " +
+            "a.code_url, " +
+            "a.create_time, " +
+            "a.update_time, " +
+            "a.addressno, " +
+            "a.servicetime, " +
+            "a.coupon, " +
+            "a.note, " +
+            "b.id addId, " +
+            "b.code addCode, " +
+            "b.name addName, " +
+            "b.address addAddress, " +
+            "b.phone addPhone, " +
+            "c.id fileId, " +
+            "c.orderno, " +
+            "c.name fileName, " +
+            "c.path, " +
+            "c.type " +
+            "FROM  t_orders_info a  " +
+            "left join t_address b on a.addressno=b.id " +
+            "left join t_picture c on a.order_no=c.orderno " +
+            "where user_id = #{user_id} order by update_time desc ")
+//    ArrayList<OrdersInfo> getOrdersInfoByUsercode(@Param("user_id") String user_id);
+    ArrayList<AllOrdersInfo> getOrdersInfoByUsercode(@Param("user_id") String user_id);
 
+    /*
+     *
+     *   根据订单号查询个人订单
+     * */
+    @Select("SELECT   "
+            + "a.id, " +
+            "a.user_id, " +
+            "a.product_id, " +
+            "a.order_no, " +
+            "a.order_status, " +
+            "a.total_fee, " +
+            "a.title, " +
+            "a.code_url, " +
+            "a.create_time, " +
+            "a.update_time, " +
+            "a.addressno, " +
+            "a.servicetime, " +
+            "a.coupon, " +
+            "a.note, " +
+            "u.id, " +
+            "u.code, " +
+            "u.name username, " +
+            "u.sex, " +
+            "u.wechat, " +
+            "u.note avatar," +
+            "b.id addId, " +
+            "b.code addCode, " +
+            "b.name name, " +
+            "b.address addAddress, " +
+            "b.phone addPhone, " +
+            "c.id fileId, " +
+            "c.orderno, " +
+            "c.name fileName, " +
+            "c.path, " +
+            "c.type " +
+            "FROM  t_orders_info a  " +
+            "left join t_user u on a.user_id = u.code " +
+            "left join t_address b on a.addressno=b.id " +
+            "left join t_picture c on a.order_no=c.orderno " +
+            "order by update_time desc ")
+    ArrayList<AllOrdersInfo> getAllOrdersInfoByUsercode();
+//
     @Select("SELECT order_status  " +
             " FROM  t_orders_info " +
             " where order_no=#{order_no} limit 1 ")

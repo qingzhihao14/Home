@@ -85,7 +85,7 @@
     </if>
   </select>
   <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select 
+    select
     <include refid="Base_Column_List" />
     from t_user
     where id = #{id,jdbcType=VARCHAR}
@@ -217,4 +217,11 @@
       note = #{note,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>
+
+  <select id="selectUsersInfoPage"  resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_user
+    order by id
+  </select>
 </mapper>

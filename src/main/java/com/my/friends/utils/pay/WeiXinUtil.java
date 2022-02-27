@@ -25,6 +25,7 @@ public class WeiXinUtil {
     public final static String appid = "wx44d840fe4bbc9ef7";
     public final static String appSecret = "81573a408a091d9781d52617f9e31658";
 
+    public final static String access_token_get_phone = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=ACCESS_TOKEN&code=CODE";
 
     /*
     * Q微信小程序获取Openid和Sessionkey
@@ -56,6 +57,25 @@ public class WeiXinUtil {
         accesstoken.setToken(jsonObject.getString("access_token"));
         accesstoken.setExpiresIn(jsonObject.getInt("expires_in"));
         return accesstoken;
+    }
+
+    public static String getPhone(String code) {
+        AccessToken accessToken = getAccessToken(appid, appSecret);
+        //替换真实appid和appsecret
+        String requestUrl = access_token_get_phone.replace("ACCESS_TOKEN", accessToken.getToken()).replace("CODE", code);
+        //得到json对象
+        JSONObject jsonObject = CommonUtil.httpsRequest(requestUrl, "GET", null);
+
+        //将得到的json对象的属性值，存到accesstoken中
+        System.out.println("==" + jsonObject.toString());
+        if("0".equals(jsonObject.getString("errcode"))){
+            JSONObject phone_info = jsonObject.getJSONObject("phone_info");
+            String phoneNumber = phone_info.getString("phoneNumber");
+            log.info("调取微信接口获取到的phone="+phoneNumber);
+            return phoneNumber;
+        }else {
+            return "";
+        }
     }
 
     /**

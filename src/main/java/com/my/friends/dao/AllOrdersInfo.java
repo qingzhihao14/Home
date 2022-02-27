@@ -7,10 +7,14 @@ import java.util.Date;
 
 /**
  * t_orders_info
- * @author 
+ * @author
  */
 @Data
 public class AllOrdersInfo implements Serializable {
+    /*
+    *
+    * 1、订单
+    * */
     /**
      * 订单id
      */
@@ -81,8 +85,11 @@ public class AllOrdersInfo implements Serializable {
      */
     private String note;
 
-
-    private  String name;
+    /*
+    *
+    * 2、User
+    * */
+//    private  String name; address name
 
     private  String address;
 
@@ -92,11 +99,66 @@ public class AllOrdersInfo implements Serializable {
 
     private  String avatar;
 
-    /**
-     * 性别
-     */
     private Integer sex;
 
+    /*
+    *
+    * 3、订单图片
+    * */
+    /**
+     * 代码
+     */
+    private String fileId;
+
+    /**
+     * 订单编码
+     */
+    private String orderno;
+
+    /**
+     * 文件名称
+     */
+    private String fileName;
+
+    /**
+     * 相对路径
+     */
+    private String path;
+
+    /**
+     * 文件类型
+     */
+    private String type;
+
+
+    /*
+    *
+    * 4、地址
+    * */
+    /**
+     * 代码
+     */
+    private String addId;
+
+    /**
+     * 用户代码
+     */
+    private String addCode;
+
+    /**
+     * 地址编码
+     */
+    private String name;
+
+    /**
+     * 地址
+     */
+    private String addAddress;
+
+    /*
+    * 手机号
+    * */
+    private String addPhone;
 
     private static final long serialVersionUID = 1L;
 }
