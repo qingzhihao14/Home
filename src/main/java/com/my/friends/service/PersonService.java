@@ -15,6 +15,17 @@ public interface PersonService {
     // 操作日志
     void insertLog(Logss log);
 
+
+    /*
+    * 0.门店
+    * */
+
+    //查询
+    Result selectStores(String parent);
+    Result insertOrUpdateStore(Qy qy);
+
+
+
     /*
     * 1.类别
     * */

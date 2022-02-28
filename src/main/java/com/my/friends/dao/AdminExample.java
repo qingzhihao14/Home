@@ -583,6 +583,76 @@ public class AdminExample {
             addCriterion("note not between", value1, value2, "note");
             return (Criteria) this;
         }
+
+        public Criteria andMdcodeIsNull() {
+            addCriterion("mdcode is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeIsNotNull() {
+            addCriterion("mdcode is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeEqualTo(String value) {
+            addCriterion("mdcode =", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeNotEqualTo(String value) {
+            addCriterion("mdcode <>", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeGreaterThan(String value) {
+            addCriterion("mdcode >", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeGreaterThanOrEqualTo(String value) {
+            addCriterion("mdcode >=", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeLessThan(String value) {
+            addCriterion("mdcode <", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeLessThanOrEqualTo(String value) {
+            addCriterion("mdcode <=", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeLike(String value) {
+            addCriterion("mdcode like", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeNotLike(String value) {
+            addCriterion("mdcode not like", value, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeIn(List<String> values) {
+            addCriterion("mdcode in", values, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeNotIn(List<String> values) {
+            addCriterion("mdcode not in", values, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeBetween(String value1, String value2) {
+            addCriterion("mdcode between", value1, value2, "mdcode");
+            return (Criteria) this;
+        }
+
+        public Criteria andMdcodeNotBetween(String value1, String value2) {
+            addCriterion("mdcode not between", value1, value2, "mdcode");
+            return (Criteria) this;
+        }
     }
 
     /**

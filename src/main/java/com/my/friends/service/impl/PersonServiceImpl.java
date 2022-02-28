@@ -94,8 +94,64 @@ public class PersonServiceImpl implements PersonService {
 
     //============================================================================
     /*
-    * 0.查询类别、项目
-    * */
+     * 0.查询门店
+     * */
+    @Override
+    public Result selectStores(String code) {
+        QyExample example = new QyExample();
+        if(!StringUtils.isNullOrEmpty(code)){
+            example.createCriteria().andCodeEqualTo(code);
+        }else{
+            example.createCriteria().andCodeIsNotNull();
+        }
+        List<Qy> list = qyMapper.selectByExample(example);
+        if(list.size()>0){
+            return Result.success(list);
+        }else{
+            return Result.error(CodeMsg.NOT_FIND_DATA,"无门店信息");
+        }
+    }
+
+    //1.2新增
+    @Override
+    public Result insertOrUpdateStore(Qy qy) {
+        QyExample example = new QyExample();
+        int count = 0;
+        if(!"".equals(qy.getId()) && qy.getId()!= null){
+            // 编辑
+            count = qyMapper.updateByPrimaryKeySelective(qy);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"更新失败");
+            }
+        }else{
+            // 新增
+            String uuid = UUID.randomUUID().toString().replace("-", "").toLowerCase();
+            qy.setId(uuid);
+            example.createCriteria().andCodeIsNotNull();
+            List<Qy> qys = qyMapper.selectByExample(example);
+            if(qys.size()==0){
+                qy.setCode("MD1");
+            }else{
+                Integer max = qys.stream()
+                        .map(Qy::getCode)
+                        .map(s -> {
+                            return Integer.parseInt(s.substring(2));
+                        }).max(Integer::compare).get();
+                qy.setCode("MD"+(max+1));
+            }
+            count = qyMapper.insert(qy);
+            if(count>0){
+                return Result.success();
+            }else{
+                return Result.error(CodeMsg.OP_FAILED,"新增失败");
+            }
+        }
+    }
+    /*
+     * 0.查询类别、项目
+     * */
     @Override
     public Result selectLbXm(String parent) {
 
@@ -748,6 +804,7 @@ public class PersonServiceImpl implements PersonService {
         map.put("name",admin.getName());
         map.put("username",admin.getCode());
         map.put("userid",admin.getId());
+        map.put("mdcode",admin.getMdcode());
         ArrayList<String> arrayList = new ArrayList<>();
         arrayList.add("admin");
         map.put("roles",arrayList);

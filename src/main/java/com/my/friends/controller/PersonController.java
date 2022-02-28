@@ -101,6 +101,42 @@ public class PersonController {
             return Result.error(CodeMsg.SESSION_NOT_EXSIST,"Token无效");
         }
     }
+
+    /*
+     * 0.获取门店信息
+     * */
+    @ApiOperation(value = "获取门店信息")
+    @RequestMapping(value = "/getStores", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result getStores(@RequestBody Map<String,String> remap,
+                                    HttpServletRequest request){
+        String code = remap.get("code");
+        String way = remap.get("way");
+        if(!"all".equals(way)){
+            Result result = getOpenId(request);
+            User user = (User) result.getData();
+            String param = JSONUtil.toJsonStr(remap);
+            personService.insertLog(new Logss( user.getCode(),  user.getName(),  "下单【个人】",  "/getStores",  param));
+        }
+        return personService.selectStores(code);
+    }
+    // 0.2 新增或更新门店
+    @ApiOperation(value = "新增或更新门店信息")
+    @RequestMapping(value = "/insertOrUpdateStore", method = {RequestMethod.POST})
+    public Result insertOrUpdateStore(@RequestBody Map<String,String> remap,
+                                   HttpServletRequest request){
+        String id = remap.get("id");
+        Qy qy = new Qy();
+        if(!StringUtils.isNullOrEmpty(id)){
+            qy.setId(id);
+        }
+        qy.setCode(remap.get("code"));
+        qy.setName(remap.get("name"));
+        qy.setName(remap.get("contact"));
+        qy.setName(remap.get("phone"));
+        qy.setName(remap.get("address"));
+        return personService.insertOrUpdateStore(qy);
+    }
+
     /*
      * 0.获取类别、项目信息
      * */

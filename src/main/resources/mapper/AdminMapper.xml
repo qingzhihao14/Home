@@ -9,6 +9,7 @@
     <result column="sex" jdbcType="INTEGER" property="sex" />
     <result column="wechat" jdbcType="VARCHAR" property="wechat" />
     <result column="note" jdbcType="VARCHAR" property="note" />
+    <result column="mdcode" jdbcType="VARCHAR" property="mdcode" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -69,7 +70,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, code, psd, `name`, sex, wechat, note
+    id, code, psd, `name`, sex, wechat, note, mdcode
   </sql>
   <select id="selectByExample" parameterType="com.my.friends.dao.AdminExample" resultMap="BaseResultMap">
     select
@@ -102,10 +103,12 @@
     </if>
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Admin" useGeneratedKeys="true">
-    insert into t_admin (id,code, psd, `name`,
-      sex, wechat, note)
-    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{psd,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
-      #{sex,jdbcType=INTEGER}, #{wechat,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR})
+    insert into t_admin (id, code, psd, `name`,
+      sex, wechat, note, 
+      mdcode)
+    values (#{id,jdbcType=VARCHAR},#{code,jdbcType=VARCHAR}, #{psd,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR},
+      #{sex,jdbcType=INTEGER}, #{wechat,jdbcType=VARCHAR}, #{note,jdbcType=VARCHAR}, 
+      #{mdcode,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.my.friends.dao.Admin" useGeneratedKeys="true">
     insert into t_admin
@@ -128,6 +131,9 @@
       <if test="note != null">
         note,
       </if>
+      <if test="mdcode != null">
+        mdcode,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="code != null">
@@ -147,6 +153,9 @@
       </if>
       <if test="note != null">
         #{note,jdbcType=VARCHAR},
+      </if>
+      <if test="mdcode != null">
+        #{mdcode,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -180,6 +189,9 @@
       <if test="record.note != null">
         note = #{record.note,jdbcType=VARCHAR},
       </if>
+      <if test="record.mdcode != null">
+        mdcode = #{record.mdcode,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -193,7 +205,8 @@
       `name` = #{record.name,jdbcType=VARCHAR},
       sex = #{record.sex,jdbcType=INTEGER},
       wechat = #{record.wechat,jdbcType=VARCHAR},
-      note = #{record.note,jdbcType=VARCHAR}
+      note = #{record.note,jdbcType=VARCHAR},
+      mdcode = #{record.mdcode,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -219,6 +232,9 @@
       <if test="note != null">
         note = #{note,jdbcType=VARCHAR},
       </if>
+      <if test="mdcode != null">
+        mdcode = #{mdcode,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=VARCHAR}
   </update>
@@ -229,7 +245,8 @@
       `name` = #{name,jdbcType=VARCHAR},
       sex = #{sex,jdbcType=INTEGER},
       wechat = #{wechat,jdbcType=VARCHAR},
-      note = #{note,jdbcType=VARCHAR}
+      note = #{note,jdbcType=VARCHAR},
+      mdcode = #{mdcode,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>
 </mapper>

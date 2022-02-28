@@ -44,5 +44,10 @@ public class Admin implements Serializable {
      */
     private String note;
 
+    /**
+     * 企业代码
+     */
+    private String mdcode;
+
     private static final long serialVersionUID = 1L;
 }
