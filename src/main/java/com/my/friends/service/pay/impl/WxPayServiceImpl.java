@@ -35,8 +35,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -97,53 +99,49 @@ public class WxPayServiceImpl implements WxPayService {
      *
      * */
     @Override
-    public Result nativePayPicUploads(String orderno, MultipartFile[] files) {
-
-        ArrayList<Picture> pictureList = new ArrayList<>();
-        for(MultipartFile mf: files) {
-            String id = IdUtil.simpleUUID().substring(0, 15);
-            String original_name = mf.getOriginalFilename();
-            //            String fileType = mf.getContentType();
-            String file_name = "home_" + id + '.' + FileUtil.getSuffix(original_name);
-            String path = (File.separator + file_name).replaceAll("\\\\", "/");
-            String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
-            log.info("picture==newfilePath="+newfilePath);
-            Picture picture = new Picture();
-            picture.setId(id);
-            picture.setOrderno(orderno);
-            picture.setName(file_name);
-            picture.setPath(path);
-            picture.setType(FileUtil.getSuffix(original_name));
-            try {
-                // 创建本地文件存放 文件夹 路径实例
-                File dest = new File(baseAddress);
-                // 判断本地 文件夹 不存在就创建
-                if (!dest.exists()) {
-                    dest.mkdirs();
-                }
-                // 创建文件实例
-                File uploadFile = FileUtil.file(newfilePath);
-                // 如果文件在本地存在就删除
-                if (uploadFile.exists()) {
-                    uploadFile.delete();
-                }
-                mf.transferTo(uploadFile);
-                pictureList.add(picture);
-                log.info("picture==="+picture);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
-                return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
+    public Result payFileUpload(HttpServletRequest request) {
+        log.info("图片上传====");
+        MultipartHttpServletRequest req =(MultipartHttpServletRequest)request;
+        MultipartFile mf = req.getFile("file");
+        String id = IdUtil.simpleUUID().substring(0, 15);
+        String original_name = mf.getOriginalFilename();
+        String file_name = "home_" + id + '.' + FileUtil.getSuffix(original_name);
+        String path = (File.separator + file_name).replaceAll("\\\\", "/");
+        String newfilePath = (baseAddress + File.separator + file_name).replaceAll("\\\\", "/");
+        log.info("picture==newfilePath="+newfilePath);
+        Picture picture = new Picture();
+        picture.setId(id);
+//        picture.setOrderno(orderno);
+        picture.setName(file_name);
+        picture.setPath(path);
+        picture.setType(FileUtil.getSuffix(original_name));
+        try {
+            // 创建本地文件存放 文件夹 路径实例
+            File dest = new File(baseAddress);
+            // 判断本地 文件夹 不存在就创建
+            if (!dest.exists()) {
+                dest.mkdirs();
             }
-        }
+            // 创建文件实例
+            File uploadFile = FileUtil.file(newfilePath);
+            // 如果文件在本地存在就删除
+            if (uploadFile.exists()) {
+                uploadFile.delete();
+            }
+            mf.transferTo(uploadFile);
 
-        if(pictureList.size()>0){
-            pictureList.forEach(picture -> {
-                pictureMapper.insert(picture);
-            });
+            pictureMapper.insert(picture);
+            log.info("picture==="+picture);
+            HashMap<Object, Object> map = new HashMap<>();
+            map.put("id",id);
+            map.put("path",path);
+            return Result.success(map);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.out.println("upload failed. filename: " + original_name + "---->>>error message ----->>>>> " + e.getMessage());
+            return Result.error(CodeMsg.OP_FAILED,"上传图片失败");
         }
-        return Result.success();
     }
     /**
      * 创建订单，调用Native支付接口
@@ -162,7 +160,7 @@ public class WxPayServiceImpl implements WxPayService {
                             String servicetime,
                             String coupon,
                             String note,
-                            MultipartFile[] files) throws Exception {
+                            MultipartFile[] files,String picids) throws Exception {
 
         log.info("生成订单");
         //生成地址信息
@@ -170,16 +168,25 @@ public class WxPayServiceImpl implements WxPayService {
         String addressByAddressId = orderInfoService.createAddressByAddressId( detailInfo, telNumber, userName);
         //生成订单
         OrdersInfo ordersInfo = orderInfoService.createOrderByProductId(user, productId,count,pay,addressByAddressId,servicetime,coupon,note);
-        log.info("开始上传图片===");
-        if(files!=null && files.length > 0){
-            log.info("有"+files.length+"个图片上传===");
-            // 上传图片
-            Result result = nativePayPicUploads(ordersInfo.getOrderNo(), files);
-            if(result.getCode() != 0){
-                return result;
+//        log.info("开始上传图片===");
+        if(StringUtils.isEmpty(picids)){
+            String[] picid = picids.split(",");
+            for (int i =0;i<picid.length;i++){
+                Picture picture = new Picture();
+                picture.setId(picid[i]);
+                picture.setOrderno(ordersInfo.getOrderNo());
+                pictureMapper.updateByPrimaryKeySelective(picture);
             }
-//        return Result.error(CodeMsg.PARAMETER_ISNULL,"无图片");
         }
+//        if(files!=null && files.length > 0){
+//            log.info("有"+files.length+"个图片上传===");
+//            // 上传图片
+//            Result result = nativePayPicUploads(ordersInfo.getOrderNo(), files);
+//            if(result.getCode() != 0){
+//                return result;
+//            }
+////        return Result.error(CodeMsg.PARAMETER_ISNULL,"无图片");
+//        }
 
         String codeUrl = ordersInfo.getCodeUrl();
         if(ordersInfo != null && !StringUtils.isEmpty(codeUrl)){
@@ -270,11 +277,20 @@ public class WxPayServiceImpl implements WxPayService {
 
 
     @Override
-    public Result getOrder(String usercode) {
-        ArrayList<AllOrdersInfo> OrdersInfos = sqlService.getOrdersInfoByUsercode(usercode);
+    public Result getOrder(String usercode,String orderStatus) {
+        ArrayList<AllOrdersInfo> ordersInfos = new ArrayList<>();
+        if(StringUtils.isEmpty(orderStatus)){
+            ordersInfos = sqlService.getOrdersInfoByUsercode(usercode);
+        }else {
+            String[] split = orderStatus.split(",");
+            log.info("orderStatus"+split);
+            List<String> strings = Arrays.asList(split);
+            log.info("orderStatus"+strings);
+            ordersInfos = sqlService.getOrdersInfoByUsercodeAndStatus(usercode,strings);
+        }
 //        ArrayList<OrdersInfo> OrdersInfos = sqlService.getOrdersInfoByUsercode(usercode);
-        if(OrdersInfos.size()>0){
-            return Result.success(OrdersInfos);
+        if(ordersInfos.size()>0){
+            return Result.success(ordersInfos);
         }else{
             return Result.error(CodeMsg.NOT_FIND_DATA,"无类别数据，请添加");
         }

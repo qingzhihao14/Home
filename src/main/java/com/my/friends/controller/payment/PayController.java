@@ -86,6 +86,13 @@ public class PayController {
         }
     }
 
+
+    @ApiOperation(value = "下单-照片上传【个人】")
+    @RequestMapping(value = "/payFileUpload", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result payFileUpload(HttpServletRequest request) throws Exception {
+        return payService.payFileUpload(request);
+    }
+
     /*
      *
      * 1.下单
@@ -143,6 +150,7 @@ public class PayController {
         if(StringUtils.isNullOrEmpty(servicetime)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"商品servicetime为空");
         }
+        String picids = remap.get("picids");
         // 优惠券 待开发
         String coupon = remap.get("coupon");
         String note = remap.get("note");
@@ -163,7 +171,7 @@ public class PayController {
         String param = JSONUtil.toJsonStr(remap);
         personService.insertLog(new Logss( user.getCode(),  user.getName(),  "下单【个人】",  "/order",  param));
 
-        return payService.nativePay(user, code,count,pay,detailInfo, telNumber, userName,servicetime,coupon,note,files);
+        return payService.nativePay(user, code,count,pay,detailInfo, telNumber, userName,servicetime,coupon,note,files,picids);
     }
 
 
@@ -171,8 +179,10 @@ public class PayController {
     // 1.2 查询订单
     @ApiOperation(value = "查询订单（根据用户code）【个人】")
     @GetMapping("/getOrder")
-    public Result getOrder(
+    public Result getOrder(@RequestParam Map<String,String> remap,
             HttpServletRequest request){
+//        order_status
+        String orderStatus = remap.get("orderStatus");
         String way = request.getParameter("way");
         String code = "";
         User user = new User();
@@ -184,13 +194,12 @@ public class PayController {
             user = (User) result.getData();
             code = user.getCode();
         }
-        HashMap<Object, Object> remap = new HashMap<>();
         remap.put("userCode",code);
         String param = JSONUtil.toJsonStr(remap);
         personService.insertLog(new Logss( user.getCode(),  user.getName(),  "查询订单【个人】",  "/getOrder",  param));
 
 //        code = "A9UJ96+nXmI35xuI9N52AA==";
-        return payService.getOrder(code);
+        return payService.getOrder(code,orderStatus);
     }
 
     /**

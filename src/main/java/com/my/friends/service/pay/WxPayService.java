@@ -5,6 +5,7 @@ import com.my.friends.pay.paymentdemo.vo.R;
 import com.my.friends.utils.Result;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 
 public interface WxPayService {
+
 
     /*
     *
@@ -27,12 +29,13 @@ public interface WxPayService {
     * note 备注
     * */
     // 更新state状态订单状态(0-未完成，1-已完成，2-已取消)
-    Result nativePay(User user, String code,String count,String pay,String detailInfo,String telNumber,String userName,String servicetime,String coupon,String note, MultipartFile[] files) throws Exception;
+    Result nativePay(User user, String code,String count,String pay,String detailInfo,String telNumber,String userName,String servicetime,String coupon,String note, MultipartFile[] files,String picids) throws Exception;
     // 下单-图片上传
-    Result nativePayPicUploads(String orderno, MultipartFile[] files);
+//    Result nativePayPicUploads(String orderno, MultipartFile[] files);
+    Result payFileUpload(HttpServletRequest request) throws Exception;
 
     //查询个人订单信息
-    Result getOrder(String usercode);
+    Result getOrder(String usercode,String orderStatus);
 
     /**
      * 支付通知
