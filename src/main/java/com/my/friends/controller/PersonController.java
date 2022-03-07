@@ -388,16 +388,20 @@ public class PersonController {
 
 
         String code = remap.get("code");
+        if(StringUtils.isNullOrEmpty(code)){
+            return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
+        }
 
+        String phoneCode = remap.get("phoneCode");
         if(StringUtils.isNullOrEmpty(code)){
             return Result.error(CodeMsg.PARAMETER_ISNULL,"微信code");
         }
 
 
-        String phone = WeiXinUtil.getPhone(code);
-        log.info("调取微信接口获取到的phone="+phone);
         JSONObject jsonObject = WeiXinUtil.getSessionkeyAndOpenid(code);
 
+        String phone = WeiXinUtil.getPhone(phoneCode);
+        log.info("调取微信接口获取到的phone="+phone);
         JsCodeSession jsCodeSession =new JsCodeSession();
 
         if(!jsonObject.containsKey("errcode")){
@@ -410,11 +414,12 @@ public class PersonController {
             log.info("开始执行！");
             log.info("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
             String personalKey = commandService.executeCmd("head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 168");
-
+//            String personalKey = UUID.randomUUID().toString().replace("-", "").toLowerCase();
             HashMap<String, String> map = new HashMap<>();
             map.put("cookie",personalKey+"new");
             map.put("openid",jsCodeSession.getOpenId());
             map.put("sessionkey",jsCodeSession.getSession_key());
+            map.put("phone",phone);
             log.info("设置Session{key="+personalKey+",value="+jsCodeSession.getOpenId()+"，"+jsCodeSession.getSession_key());
             HttpSession session = request.getSession(true);
             //以秒为单位，即在没有活动30分钟后，session将失效

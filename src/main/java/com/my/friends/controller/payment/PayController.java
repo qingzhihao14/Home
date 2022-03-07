@@ -178,7 +178,7 @@ public class PayController {
 
     // 1.2 查询订单
     @ApiOperation(value = "查询订单（根据用户code）【个人】")
-    @GetMapping("/getOrder")
+    @RequestMapping(value = "/getOrder", method = {RequestMethod.POST, RequestMethod.GET})
     public Result getOrder(@RequestParam Map<String,String> remap,
             HttpServletRequest request){
 //        order_status

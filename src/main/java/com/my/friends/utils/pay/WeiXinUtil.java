@@ -1,12 +1,32 @@
 package com.my.friends.utils.pay;
 
+import com.alibaba.fastjson.JSON;
 import com.my.friends.controller.PersonController;
 import com.my.friends.service.CommandService;
 import com.mysql.jdbc.StringUtils;
+import io.netty.channel.ConnectTimeoutException;
 import net.sf.json.JSONObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Consts;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class WeiXinUtil {
 
@@ -48,36 +68,108 @@ public class WeiXinUtil {
     public static AccessToken getAccessToken(String appid, String appSecret) {
         //替换真实appid和appsecret
         String requestUrl = access_token_url.replace("APPID", appid).replace("APPSECRET", appSecret);
+        log.info("requestUrl"+requestUrl);
         AccessToken accesstoken = new AccessToken();
         //得到json对象
         JSONObject jsonObject = CommonUtil.httpsRequest(requestUrl, "GET", null);
-
         //将得到的json对象的属性值，存到accesstoken中
-        System.out.println("==" + jsonObject.toString());
+        System.out.println("=getAccessToken=" + jsonObject.toString());
         accesstoken.setToken(jsonObject.getString("access_token"));
         accesstoken.setExpiresIn(jsonObject.getInt("expires_in"));
+        log.info("=getAccessToken="+jsonObject.toString());
+        log.info("=getAccessToken access_token="+jsonObject.getString("access_token"));
+        log.info("=getAccessToken expires_in="+jsonObject.getInt("expires_in"));
         return accesstoken;
     }
 
     public static String getPhone(String code) {
         AccessToken accessToken = getAccessToken(appid, appSecret);
-        //替换真实appid和appsecret
-        String requestUrl = access_token_get_phone.replace("ACCESS_TOKEN", accessToken.getToken()).replace("CODE", code);
-        //得到json对象
-        JSONObject jsonObject = CommonUtil.httpsRequest(requestUrl, "GET", null);
-
-        //将得到的json对象的属性值，存到accesstoken中
-        System.out.println("==" + jsonObject.toString());
-        if("0".equals(jsonObject.getString("errcode"))){
-            JSONObject phone_info = jsonObject.getJSONObject("phone_info");
+//        //替换真实appid和appsecret
+//        String requestUrl = access_token_get_phone.replace("ACCESS_TOKEN", accessToken.getToken()).replace("CODE", code);
+//        log.info("requestUrl"+requestUrl);
+//        //得到json对象
+//        JSONObject jsonObject = CommonUtil.httpsRequest(requestUrl, "POST", null);
+//
+//        //将得到的json对象的属性值，存到accesstoken中
+//        System.out.println("==" + jsonObject.toString());
+//        log.info("=getPhone="+jsonObject.toString());
+//        log.info("=getPhone errcode="+jsonObject.getString("errcode"));
+//        if("0".equals(jsonObject.getString("errcode"))){
+//            JSONObject phone_info = jsonObject.getJSONObject("phone_info");
+//            String phoneNumber = phone_info.getString("phoneNumber");
+//            log.info("=getPhone phone_info="+jsonObject.getInt("phone_info"));
+//            log.info("=getPhone phoneNumber="+phoneNumber);
+//            log.info("getPhone()调取微信接口获取到的phone="+phoneNumber);
+//            return phoneNumber;
+//        }else {
+//            return "";
+//        }
+            // 获取accessToken
+//            AppletAccessToken accessToken = ProgramInfoUtil.getAccessToken(weChatConfig.getAppletAppId(), weChatConfig.getAppletSecret());
+            String url = "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=" + accessToken.getToken();
+            Map<String, String> map = new HashMap<>(1);
+            map.put("code", code);
+            String response = postJson(url, JSON.toJSONString(map), null);
+//        JSONObject.fromObject(response)errcode -> {Integer@14468} 0 errmsg -> ok phone_info -> {JSONObject@14488}  size = 4 phoneNumber -> 18234775750
+        JSONObject jsonObject = JSONObject.fromObject(response);
+        String errcode = jsonObject.getString("errcode");
+        if((!StringUtils.isNullOrEmpty(errcode) && Integer.parseInt(errcode)==0)){
+            JSONObject phone_info = (JSONObject)jsonObject.get("phone_info");
             String phoneNumber = phone_info.getString("phoneNumber");
-            log.info("调取微信接口获取到的phone="+phoneNumber);
             return phoneNumber;
-        }else {
+        }else{
             return "";
         }
     }
-
+    /**
+     * 向指定 URL 发送json格式参数的POST方法的请求
+     *
+     * @param url  发送请求的 URL
+     * @param json json格式请求参数
+     * @return 所代表远程资源的响应结果
+     */
+    public static String postJson(String url, String json, Map<String, String> headMap) {
+        String returnStr;
+        CloseableHttpClient httpClient = null;
+        CloseableHttpResponse httpResponse = null;
+        try {
+            HttpPost post = new HttpPost(url);
+            post.setConfig(RequestConfig.custom().setSocketTimeout(10000).setConnectTimeout(10000).build());
+            httpClient = HttpClientBuilder.create().build();
+            StringEntity s = new StringEntity(json, Consts.UTF_8);
+            s.setContentType("application/json");
+            if (headMap != null && headMap.size() > 0) {
+                Set<String> keySet = headMap.keySet();
+                for (String key : keySet) {
+                    post.addHeader(key, headMap.get(key));
+                }
+            }
+            post.setEntity(s);
+            httpResponse = httpClient.execute(post);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent(),
+                    StandardCharsets.UTF_8.name()));
+            StringBuilder stringBuffer = new StringBuilder(100);
+            String str;
+            while ((str = reader.readLine()) != null) {
+                stringBuffer.append(str);
+            }
+            returnStr = stringBuffer.toString();
+            reader.close();
+            return returnStr;
+        } catch (SocketTimeoutException e) {
+            log.error("地址: ["+url+"]|参数: ["+json+"] 读取超时");
+            return "";
+        } catch (ConnectTimeoutException e) {
+            log.error("地址: [\"+url+\"]|参数: [\"+json+\"] 连接超时");
+            return "";
+        } catch (Exception e) {
+            log.error("地址: [\"+url+\"]|参数: [\"+json+\"] 请求异常: "+e);
+            return "";
+        } finally {
+            HttpClientUtils.closeQuietly(httpResponse);
+            HttpClientUtils.closeQuietly(httpClient);
+        }
+    }
     /**
      * 网页授权认证
      *

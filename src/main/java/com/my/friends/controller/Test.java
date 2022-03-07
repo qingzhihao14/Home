@@ -9,8 +9,7 @@ import java.io.File;
 import java.sql.SQLOutput;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @Atuhor: qin
@@ -21,11 +20,18 @@ import java.util.UUID;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        Instant minus = Instant.now().minus(Duration.ofMinutes(1));
-        Date from = Date.from(minus);
-        System.out.println(minus);
-        System.out.println(from);
-        QRCodeUtil.encode("weixin://wxpay/bizpayurl?pr=WF0xw1Ezz","", "C:/Home"+ File.separator+ UUID.randomUUID().toString()+".jpg");
-        System.out.println("C:/Home"+ File.separator+ UUID.randomUUID().toString()+".jpg");
+//        Instant minus = Instant.now().minus(Duration.ofMinutes(1));
+//        Date from = Date.from(minus);
+//        System.out.println(minus);
+//        System.out.println(from);
+//        QRCodeUtil.encode("weixin://wxpay/bizpayurl?pr=WF0xw1Ezz","", "C:/Home"+ File.separator+ UUID.randomUUID().toString()+".jpg");
+//        System.out.println("C:/Home"+ File.separator+ UUID.randomUUID().toString()+".jpg");
+        List<Object> list = new ArrayList<>();
+        list  = Arrays.asList();
+        list.add(null);
+        System.out.println(list);
+        System.out.println(list.size());
+        System.out.println(list==null);
+        System.out.println(!list.isEmpty());
     }
 }
