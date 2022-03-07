@@ -96,7 +96,7 @@ public interface SqlService {
      *
      *   根据订单号查询个人订单
      * */
-    @Select("SELECT   "
+    @Select("<script> SELECT   "
             + "a.id, " +
             "a.user_id, " +
             "a.product_id, " +
@@ -125,10 +125,15 @@ public interface SqlService {
             "left join t_address b on a.addressno=b.id " +
             "left join t_picture c on a.order_no=c.orderno " +
 //            "where a.user_id = #{user_id} and  a.order_status = #{order_status}  " +
-            "where a.user_id = #{user_id} and  a.order_status in (:order_status)  " +
-            "order by update_time desc ")
+//            "where a.user_id = #{user_id} and  a.order_status in (:order_status)  " +
+            "where a.user_id = #{user_id} and  " +
+//            "a.order_status in ('#{order_status}')  " +
+            "a.order_status in <foreach collection='order_status' item='order_statu' index='index' open='('  separator=',' close=')'>#{order_statu}</foreach>  " +
+            "order by update_time desc </script> ")
 //    ArrayList<OrdersInfo> getOrdersInfoByUsercode(@Param("user_id") String user_id);
-    ArrayList<AllOrdersInfo> getOrdersInfoByUsercodeAndStatus(@Param("user_id") String user_id,@Param("order_status") List<String> order_status);
+//    ArrayList<AllOrdersInfo> getOrdersInfoByUsercodeAndStatus(@Param("user_id") String user_id,@Param("order_status") List<String> order_status);
+        ArrayList<AllOrdersInfo> getOrdersInfoByUsercodeAndStatus(@Param("user_id") String user_id,@Param("order_status") List<String> order_status);
+//    ArrayList<AllOrdersInfo> getOrdersInfoByUsercodeAndStatus(@Param("user_id") String user_id,@Param("order_status") String[] order_status);
     /*
      *
      *   根据订单号查询个人订单
